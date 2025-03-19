@@ -9,7 +9,7 @@ from ...core.pydantic_utilities import IS_PYDANTIC_V2
 
 
 class GetSpeechResponse(UniversalBaseModel):
-    audio_data: typing.Optional[typing.List[int]] = pydantic.Field(default=None)
+    audio_data: typing.Optional[str] = pydantic.Field(default=None)
     """
     Synthesized speech audio, Base64-encoded
     """

@@ -1,14 +1,14 @@
 # Speechifyinc Python Library
 
 [![fern shield](https://img.shields.io/badge/%F0%9F%8C%BF-Built%20with%20Fern-brightgreen)](https://buildwithfern.com?utm_source=github&utm_medium=github&utm_campaign=readme&utm_source=https%3A%2F%2Fgithub.com%2Fspeechifyinc%2Fspeechify-api-sdk-python)
-[![pypi](https://img.shields.io/pypi/v/speechify-api)](https://pypi.python.org/pypi/speechify-api)
+[![pypi](https://img.shields.io/pypi/v/speechifyinc)](https://pypi.python.org/pypi/speechifyinc)
 
 The Speechifyinc Python library provides convenient access to the Speechifyinc API from Python.
 
 ## Installation
 
 ```sh
-pip install speechify-api
+pip install speechifyinc
 ```
 
 ## Reference

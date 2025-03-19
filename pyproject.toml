@@ -1,9 +1,9 @@
 [project]
-name = "speechify-api"
+name = "speechifyinc"
 
 [tool.poetry]
-name = "speechify-api"
-version = "0.0.128"
+name = "speechifyinc"
+version = "0.0.0"
 description = ""
 readme = "README.md"
 authors = []
