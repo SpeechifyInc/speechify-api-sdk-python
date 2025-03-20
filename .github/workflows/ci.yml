@@ -55,5 +55,4 @@ jobs:
       - name: Publish to pypi
         run: |
           poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
-          poetry config repositories.remote https://upload.pypi.org/legacy/
-          poetry --no-interaction -v publish --build --repository remote
+          poetry publish --build
