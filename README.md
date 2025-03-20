@@ -5,6 +5,10 @@
 
 The Speechifyinc Python library provides convenient access to the Speechifyinc API from Python.
 
+## Documentation
+
+API reference documentation is available [here](https://docs.sws.speechify.com/api-reference).
+
 ## Installation
 
 ```sh
