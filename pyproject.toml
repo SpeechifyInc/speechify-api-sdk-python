@@ -3,7 +3,7 @@ name = "speechify-api"
 
 [tool.poetry]
 name = "speechify-api"
-version = "0.0.141"
+version = "0.0.143"
 description = ""
 readme = "README.md"
 authors = []
