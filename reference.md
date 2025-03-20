@@ -1,6 +1,6 @@
 # Reference
 ## Tts Audio
-<details><summary><code>client.tts.audio.<a href="src/speechifyinc/tts/audio/client.py">speech</a>(...)</code></summary>
+<details><summary><code>client.tts.audio.<a href="src/speechify/tts/audio/client.py">speech</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -27,7 +27,7 @@ Gets the speech data for the given input
 <dd>
 
 ```python
-from speechifyinc import Speechify
+from speechify import Speechify
 
 client = Speechify(
     token="YOUR_TOKEN",
@@ -125,7 +125,7 @@ simba-turbo ModelTurbo
 </details>
 
 ## Tts Auth
-<details><summary><code>client.tts.auth.<a href="src/speechifyinc/tts/auth/client.py">create_access_token</a>(...)</code></summary>
+<details><summary><code>client.tts.auth.<a href="src/speechify/tts/auth/client.py">create_access_token</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -152,7 +152,7 @@ Create a new API token for the logged in user
 <dd>
 
 ```python
-from speechifyinc import Speechify
+from speechify import Speechify
 
 client = Speechify(
     token="YOUR_TOKEN",
@@ -197,7 +197,7 @@ in: body
 </details>
 
 ## Tts Voices
-<details><summary><code>client.tts.voices.<a href="src/speechifyinc/tts/voices/client.py">list</a>()</code></summary>
+<details><summary><code>client.tts.voices.<a href="src/speechify/tts/voices/client.py">list</a>()</code></summary>
 <dl>
 <dd>
 
@@ -224,7 +224,7 @@ Gets the list of voices available for the user
 <dd>
 
 ```python
-from speechifyinc import Speechify
+from speechify import Speechify
 
 client = Speechify(
     token="YOUR_TOKEN",
@@ -257,7 +257,7 @@ client.tts.voices.list()
 </dl>
 </details>
 
-<details><summary><code>client.tts.voices.<a href="src/speechifyinc/tts/voices/client.py">create</a>(...)</code></summary>
+<details><summary><code>client.tts.voices.<a href="src/speechify/tts/voices/client.py">create</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -284,7 +284,7 @@ Create a personal (cloned) voice for the user
 <dd>
 
 ```python
-from speechifyinc import Speechify
+from speechify import Speechify
 
 client = Speechify(
     token="YOUR_TOKEN",
@@ -382,7 +382,7 @@ typing.Optional[core.File]` — See core.File for more documentation
 </dl>
 </details>
 
-<details><summary><code>client.tts.voices.<a href="src/speechifyinc/tts/voices/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.tts.voices.<a href="src/speechify/tts/voices/client.py">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -409,7 +409,7 @@ Delete a personal (cloned) voice
 <dd>
 
 ```python
-from speechifyinc import Speechify
+from speechify import Speechify
 
 client = Speechify(
     token="YOUR_TOKEN",

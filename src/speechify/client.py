@@ -41,7 +41,7 @@ class Speechify:
 
     Examples
     --------
-    from speechifyinc import Speechify
+    from speechify import Speechify
 
     client = Speechify(
         token="YOUR_TOKEN",
@@ -106,7 +106,7 @@ class AsyncSpeechify:
 
     Examples
     --------
-    from speechifyinc import AsyncSpeechify
+    from speechify import AsyncSpeechify
 
     client = AsyncSpeechify(
         token="YOUR_TOKEN",

@@ -24,7 +24,7 @@ A full reference for this library is available [here](./reference.md).
 Instantiate and use the client with the following:
 
 ```python
-from speechifyinc import Speechify
+from speechify import Speechify
 
 client = Speechify(
     token="YOUR_TOKEN",
@@ -42,7 +42,7 @@ The SDK also exports an `async` client so that you can make non-blocking calls t
 ```python
 import asyncio
 
-from speechifyinc import AsyncSpeechify
+from speechify import AsyncSpeechify
 
 client = AsyncSpeechify(
     token="YOUR_TOKEN",
@@ -65,7 +65,7 @@ When the API returns a non-success status code (4xx or 5xx response), a subclass
 will be thrown.
 
 ```python
-from speechifyinc.core.api_error import ApiError
+from speechify.core.api_error import ApiError
 
 try:
     client.tts.audio.speech(...)
@@ -102,7 +102,7 @@ The SDK defaults to a 60 second timeout. You can configure this with a timeout o
 
 ```python
 
-from speechifyinc import Speechify
+from speechify import Speechify
 
 client = Speechify(
     ...,
@@ -122,7 +122,7 @@ You can override the `httpx` client to customize it for your use-case. Some comm
 and transports.
 ```python
 import httpx
-from speechifyinc import Speechify
+from speechify import Speechify
 
 client = Speechify(
     ...,
