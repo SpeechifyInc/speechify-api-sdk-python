@@ -3,11 +3,20 @@ name = "speechify-api"
 
 [tool.poetry]
 name = "speechify-api"
-version = "0.0.148"
-description = ""
+version = "0.0.149"
+description = "Official Speechify API SDK"
 readme = "README.md"
-authors = []
-keywords = []
+authors = [
+    "Speechify <support@speechify.com>"
+]
+keywords = [
+    "speechify",
+    "ai",
+    "api",
+    "sdk",
+    "text-to-speech",
+    "tts"
+]
 
 classifiers = [
     "Intended Audience :: Developers",
@@ -31,6 +40,8 @@ packages = [
 ]
 
 [project.urls]
+Documentation = 'https://docs.sws.speechify.com/api-reference'
+Homepage = 'https://docs.sws.speechify.com'
 Repository = 'https://github.com/speechifyinc/speechify-api-sdk-python'
 
 [tool.poetry.dependencies]
