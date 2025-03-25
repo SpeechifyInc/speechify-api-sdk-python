@@ -22,6 +22,12 @@ class GetSpeechOptionsRequest(UniversalBaseModel):
     Enabling loudness normalization can increase latency due to additional processing required for audio level adjustments.
     """
 
+    text_normalization: typing.Optional[bool] = pydantic.Field(default=None)
+    """
+    Determines whether to normalize the text. If enabled, it will transform numbers, dates, etc. into words. For example, "55" is normalized into "fifty five".
+    This can increase latency due to additional processing required for text normalization.
+    """
+
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
     else:
