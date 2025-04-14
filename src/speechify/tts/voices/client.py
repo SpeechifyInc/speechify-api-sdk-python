@@ -15,6 +15,7 @@ from ..types.created_voice import CreatedVoice
 from ..errors.bad_request_error import BadRequestError
 from ..errors.payment_required_error import PaymentRequiredError
 from ...core.jsonable_encoder import jsonable_encoder
+from ..errors.unauthorized_error import UnauthorizedError
 from ...core.client_wrapper import AsyncClientWrapper
 
 # this is used as the default value for optional parameters
@@ -276,6 +277,82 @@ class VoicesClient:
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, body=_response.text)
         raise ApiError(status_code=_response.status_code, body=_response_json)
+
+    def download_sample(
+        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> typing.Iterator[bytes]:
+        """
+        Download a personal (cloned) voice sample
+
+        Parameters
+        ----------
+        id : str
+            The ID of the voice to download sample for
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response.
+
+        Yields
+        ------
+        typing.Iterator[bytes]
+            Voice sample audio file
+        """
+        with self._client_wrapper.httpx_client.stream(
+            f"v1/voices/{jsonable_encoder(id)}/sample",
+            method="GET",
+            request_options=request_options,
+        ) as _response:
+            try:
+                if 200 <= _response.status_code < 300:
+                    _chunk_size = request_options.get("chunk_size", None) if request_options is not None else None
+                    for _chunk in _response.iter_bytes(chunk_size=_chunk_size):
+                        yield _chunk
+                    return
+                _response.read()
+                if _response.status_code == 400:
+                    raise BadRequestError(
+                        typing.cast(
+                            typing.Optional[typing.Any],
+                            parse_obj_as(
+                                type_=typing.Optional[typing.Any],  # type: ignore
+                                object_=_response.json(),
+                            ),
+                        )
+                    )
+                if _response.status_code == 401:
+                    raise UnauthorizedError(
+                        typing.cast(
+                            typing.Optional[typing.Any],
+                            parse_obj_as(
+                                type_=typing.Optional[typing.Any],  # type: ignore
+                                object_=_response.json(),
+                            ),
+                        )
+                    )
+                if _response.status_code == 404:
+                    raise NotFoundError(
+                        typing.cast(
+                            typing.Optional[typing.Any],
+                            parse_obj_as(
+                                type_=typing.Optional[typing.Any],  # type: ignore
+                                object_=_response.json(),
+                            ),
+                        )
+                    )
+                if _response.status_code == 500:
+                    raise InternalServerError(
+                        typing.cast(
+                            typing.Optional[typing.Any],
+                            parse_obj_as(
+                                type_=typing.Optional[typing.Any],  # type: ignore
+                                object_=_response.json(),
+                            ),
+                        )
+                    )
+                _response_json = _response.json()
+            except JSONDecodeError:
+                raise ApiError(status_code=_response.status_code, body=_response.text)
+            raise ApiError(status_code=_response.status_code, body=_response_json)
 
 
 class AsyncVoicesClient:
@@ -557,3 +634,79 @@ class AsyncVoicesClient:
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, body=_response.text)
         raise ApiError(status_code=_response.status_code, body=_response_json)
+
+    async def download_sample(
+        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> typing.AsyncIterator[bytes]:
+        """
+        Download a personal (cloned) voice sample
+
+        Parameters
+        ----------
+        id : str
+            The ID of the voice to download sample for
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response.
+
+        Yields
+        ------
+        typing.AsyncIterator[bytes]
+            Voice sample audio file
+        """
+        async with self._client_wrapper.httpx_client.stream(
+            f"v1/voices/{jsonable_encoder(id)}/sample",
+            method="GET",
+            request_options=request_options,
+        ) as _response:
+            try:
+                if 200 <= _response.status_code < 300:
+                    _chunk_size = request_options.get("chunk_size", None) if request_options is not None else None
+                    async for _chunk in _response.aiter_bytes(chunk_size=_chunk_size):
+                        yield _chunk
+                    return
+                await _response.aread()
+                if _response.status_code == 400:
+                    raise BadRequestError(
+                        typing.cast(
+                            typing.Optional[typing.Any],
+                            parse_obj_as(
+                                type_=typing.Optional[typing.Any],  # type: ignore
+                                object_=_response.json(),
+                            ),
+                        )
+                    )
+                if _response.status_code == 401:
+                    raise UnauthorizedError(
+                        typing.cast(
+                            typing.Optional[typing.Any],
+                            parse_obj_as(
+                                type_=typing.Optional[typing.Any],  # type: ignore
+                                object_=_response.json(),
+                            ),
+                        )
+                    )
+                if _response.status_code == 404:
+                    raise NotFoundError(
+                        typing.cast(
+                            typing.Optional[typing.Any],
+                            parse_obj_as(
+                                type_=typing.Optional[typing.Any],  # type: ignore
+                                object_=_response.json(),
+                            ),
+                        )
+                    )
+                if _response.status_code == 500:
+                    raise InternalServerError(
+                        typing.cast(
+                            typing.Optional[typing.Any],
+                            parse_obj_as(
+                                type_=typing.Optional[typing.Any],  # type: ignore
+                                object_=_response.json(),
+                            ),
+                        )
+                    )
+                _response_json = _response.json()
+            except JSONDecodeError:
+                raise ApiError(status_code=_response.status_code, body=_response.text)
+            raise ApiError(status_code=_response.status_code, body=_response_json)

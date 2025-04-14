@@ -90,13 +90,7 @@ Please refer to the list of the supported languages and recommendations regardin
 <dl>
 <dd>
 
-**model:** `typing.Optional[GetSpeechRequestModel]` 
-
-Model used for audio synthesis
-simba-base ModelBase  ModelBase is deprecated. Use simba-english or simba-multilingual instead.  @deprecated
-simba-english ModelEnglish
-simba-multilingual ModelMultilingual
-simba-turbo ModelTurbo
+**model:** `typing.Optional[GetSpeechRequestModel]` — Model used for audio synthesis. `simba-base` and `simba-turbo` are deprecated. Use `simba-english` or `simba-multilingual` instead.
     
 </dd>
 </dl>

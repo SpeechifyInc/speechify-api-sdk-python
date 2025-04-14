@@ -60,11 +60,7 @@ class AudioClient:
             Please refer to the list of the supported languages and recommendations regarding this parameter: https://docs.sws.speechify.com/docs/language-support.
 
         model : typing.Optional[GetSpeechRequestModel]
-            Model used for audio synthesis
-            simba-base ModelBase  ModelBase is deprecated. Use simba-english or simba-multilingual instead.  @deprecated
-            simba-english ModelEnglish
-            simba-multilingual ModelMultilingual
-            simba-turbo ModelTurbo
+            Model used for audio synthesis. `simba-base` and `simba-turbo` are deprecated. Use `simba-english` or `simba-multilingual` instead.
 
         options : typing.Optional[GetSpeechOptionsRequest]
 
@@ -192,11 +188,7 @@ class AudioClient:
             Please refer to the list of the supported languages and recommendations regarding this parameter: https://docs.sws.speechify.com/docs/language-support.
 
         model : typing.Optional[GetStreamRequestModel]
-            Model used for audio synthesis
-            simba-base ModelBase  ModelBase is deprecated. Use simba-english or simba-multilingual instead.  @deprecated
-            simba-english ModelEnglish
-            simba-multilingual ModelMultilingual
-            simba-turbo ModelTurbo
+            Model used for audio synthesis. `simba-base` and `simba-turbo` are deprecated. Use `simba-english` or `simba-multilingual` instead.
 
         options : typing.Optional[GetStreamOptionsRequest]
 
@@ -316,11 +308,7 @@ class AsyncAudioClient:
             Please refer to the list of the supported languages and recommendations regarding this parameter: https://docs.sws.speechify.com/docs/language-support.
 
         model : typing.Optional[GetSpeechRequestModel]
-            Model used for audio synthesis
-            simba-base ModelBase  ModelBase is deprecated. Use simba-english or simba-multilingual instead.  @deprecated
-            simba-english ModelEnglish
-            simba-multilingual ModelMultilingual
-            simba-turbo ModelTurbo
+            Model used for audio synthesis. `simba-base` and `simba-turbo` are deprecated. Use `simba-english` or `simba-multilingual` instead.
 
         options : typing.Optional[GetSpeechOptionsRequest]
 
@@ -456,11 +444,7 @@ class AsyncAudioClient:
             Please refer to the list of the supported languages and recommendations regarding this parameter: https://docs.sws.speechify.com/docs/language-support.
 
         model : typing.Optional[GetStreamRequestModel]
-            Model used for audio synthesis
-            simba-base ModelBase  ModelBase is deprecated. Use simba-english or simba-multilingual instead.  @deprecated
-            simba-english ModelEnglish
-            simba-multilingual ModelMultilingual
-            simba-turbo ModelTurbo
+            Model used for audio synthesis. `simba-base` and `simba-turbo` are deprecated. Use `simba-english` or `simba-multilingual` instead.
 
         options : typing.Optional[GetStreamOptionsRequest]
 

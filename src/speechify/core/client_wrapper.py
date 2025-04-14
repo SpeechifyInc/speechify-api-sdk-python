@@ -22,7 +22,7 @@ class BaseClientWrapper:
         headers: typing.Dict[str, str] = {
             "X-Fern-Language": "Python",
             "X-Fern-SDK-Name": "speechify-api",
-            "X-Fern-SDK-Version": "1.1.0",
+            "X-Fern-SDK-Version": "1.2.0",
         }
         headers["Authorization"] = f"Bearer {self._get_token()}"
         return headers

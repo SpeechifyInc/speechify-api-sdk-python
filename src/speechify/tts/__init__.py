@@ -28,7 +28,14 @@ from .types import (
     OAuthErrorError,
     SpeechMarks,
 )
-from .errors import BadRequestError, ForbiddenError, InternalServerError, NotFoundError, PaymentRequiredError
+from .errors import (
+    BadRequestError,
+    ForbiddenError,
+    InternalServerError,
+    NotFoundError,
+    PaymentRequiredError,
+    UnauthorizedError,
+)
 from . import audio, auth, voices
 from .audio import AudioStreamRequestAccept, GetSpeechRequestAudioFormat, GetSpeechRequestModel, GetStreamRequestModel
 from .auth import CreateAccessTokenRequestScope
@@ -71,6 +78,7 @@ __all__ = [
     "OAuthErrorError",
     "PaymentRequiredError",
     "SpeechMarks",
+    "UnauthorizedError",
     "VoicesCreateRequestGender",
     "audio",
     "auth",
