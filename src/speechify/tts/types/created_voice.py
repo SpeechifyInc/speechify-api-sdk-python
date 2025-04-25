@@ -11,12 +11,12 @@ import pydantic
 
 class CreatedVoice(UniversalBaseModel):
     avatar_image: typing.Optional[str] = None
-    display_name: typing.Optional[str] = None
-    gender: typing.Optional[CreatedVoiceGender] = None
-    locale: typing.Optional[str] = None
-    id: typing.Optional[str] = None
-    models: typing.Optional[typing.List[CreateVoiceModel]] = None
-    type: typing.Optional[CreatedVoiceType] = None
+    display_name: str
+    gender: CreatedVoiceGender
+    locale: str
+    id: str
+    models: typing.List[CreateVoiceModel]
+    type: CreatedVoiceType
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2

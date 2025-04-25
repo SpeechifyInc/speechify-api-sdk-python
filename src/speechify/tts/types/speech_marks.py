@@ -12,16 +12,16 @@ class SpeechMarks(UniversalBaseModel):
     It is used to annotate the audio data with metadata about the synthesis process, like word timing or phoneme details.
     """
 
-    chunks: typing.Optional[typing.List[NestedChunk]] = pydantic.Field(default=None)
+    chunks: typing.List[NestedChunk] = pydantic.Field()
     """
     Array of NestedChunk, each providing detailed segment information within the synthesized speech.
     """
 
-    end: typing.Optional[int] = None
-    end_time: typing.Optional[float] = None
-    start: typing.Optional[int] = None
-    start_time: typing.Optional[float] = None
-    type: typing.Optional[str] = None
+    end: int
+    end_time: float
+    start: int
+    start_time: float
+    type: str
     value: typing.Optional[str] = None
 
     if IS_PYDANTIC_V2:

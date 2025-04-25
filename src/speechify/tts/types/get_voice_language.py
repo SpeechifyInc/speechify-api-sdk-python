@@ -7,7 +7,7 @@ import pydantic
 
 
 class GetVoiceLanguage(UniversalBaseModel):
-    locale: typing.Optional[str] = None
+    locale: str
     preview_audio: typing.Optional[str] = None
 
     if IS_PYDANTIC_V2:

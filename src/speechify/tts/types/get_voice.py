@@ -11,14 +11,14 @@ import pydantic
 
 class GetVoice(UniversalBaseModel):
     avatar_image: typing.Optional[str] = None
-    display_name: typing.Optional[str] = None
-    gender: typing.Optional[GetVoiceGender] = None
-    locale: typing.Optional[str] = None
-    id: typing.Optional[str] = None
-    models: typing.Optional[typing.List[GetVoicesModel]] = None
+    display_name: str
+    gender: GetVoiceGender
+    locale: str
+    id: str
+    models: typing.List[GetVoicesModel]
     preview_audio: typing.Optional[str] = None
     tags: typing.Optional[typing.List[str]] = None
-    type: typing.Optional[GetVoiceType] = None
+    type: GetVoiceType
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
