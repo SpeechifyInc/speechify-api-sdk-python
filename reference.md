@@ -131,7 +131,7 @@ Please refer to the list of the supported languages and recommendations regardin
 <dl>
 <dd>
 
-Create a new API token for the logged in user
+WARNING: This endpoint is deprecated. Create a new API token for the logged in user.
 </dd>
 </dl>
 </dd>

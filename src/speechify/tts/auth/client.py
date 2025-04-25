@@ -26,7 +26,7 @@ class AuthClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AccessToken:
         """
-        Create a new API token for the logged in user
+        WARNING: This endpoint is deprecated. Create a new API token for the logged in user.
 
         Parameters
         ----------
@@ -100,7 +100,7 @@ class AsyncAuthClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AccessToken:
         """
-        Create a new API token for the logged in user
+        WARNING: This endpoint is deprecated. Create a new API token for the logged in user.
 
         Parameters
         ----------
