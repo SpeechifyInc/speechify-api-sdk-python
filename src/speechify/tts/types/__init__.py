@@ -9,9 +9,6 @@ from .create_voice_model_name import CreateVoiceModelName
 from .created_voice import CreatedVoice
 from .created_voice_gender import CreatedVoiceGender
 from .created_voice_type import CreatedVoiceType
-from .experimental_stream_request import ExperimentalStreamRequest
-from .experimental_stream_request_model import ExperimentalStreamRequestModel
-from .experimental_stream_response import ExperimentalStreamResponse
 from .get_speech_options_request import GetSpeechOptionsRequest
 from .get_speech_response import GetSpeechResponse
 from .get_speech_response_audio_format import GetSpeechResponseAudioFormat
@@ -37,9 +34,6 @@ __all__ = [
     "CreatedVoice",
     "CreatedVoiceGender",
     "CreatedVoiceType",
-    "ExperimentalStreamRequest",
-    "ExperimentalStreamRequestModel",
-    "ExperimentalStreamResponse",
     "GetSpeechOptionsRequest",
     "GetSpeechResponse",
     "GetSpeechResponseAudioFormat",

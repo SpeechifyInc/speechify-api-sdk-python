@@ -2,4 +2,4 @@
 
 import typing
 
-GetSpeechRequestAudioFormat = typing.Union[typing.Literal["wav", "mp3", "ogg", "aac"], typing.Any]
+GetSpeechRequestAudioFormat = typing.Union[typing.Literal["wav", "mp3", "ogg", "aac", "pcm"], typing.Any]

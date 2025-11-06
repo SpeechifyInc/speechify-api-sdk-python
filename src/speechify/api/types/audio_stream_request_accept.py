@@ -2,4 +2,4 @@
 
 import typing
 
-AudioStreamRequestAccept = typing.Union[typing.Literal["audio/mpeg", "audio/ogg", "audio/aac"], typing.Any]
+AudioStreamRequestAccept = typing.Union[typing.Literal["audio/mpeg", "audio/ogg", "audio/aac", "audio/pcm"], typing.Any]

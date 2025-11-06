@@ -10,6 +10,7 @@ from ..types.get_speech_response import GetSpeechResponse
 from ...core.serialization import convert_and_respect_annotation_metadata
 from ...core.pydantic_utilities import parse_obj_as
 from ..errors.bad_request_error import BadRequestError
+from ..errors.unauthorized_error import UnauthorizedError
 from ..errors.payment_required_error import PaymentRequiredError
 from ..errors.forbidden_error import ForbiddenError
 from ..errors.internal_server_error import InternalServerError
@@ -114,6 +115,16 @@ class AudioClient:
                 )
             if _response.status_code == 400:
                 raise BadRequestError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
                     typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
@@ -228,6 +239,16 @@ class AudioClient:
                 _response.read()
                 if _response.status_code == 400:
                     raise BadRequestError(
+                        typing.cast(
+                            typing.Optional[typing.Any],
+                            parse_obj_as(
+                                type_=typing.Optional[typing.Any],  # type: ignore
+                                object_=_response.json(),
+                            ),
+                        )
+                    )
+                if _response.status_code == 401:
+                    raise UnauthorizedError(
                         typing.cast(
                             typing.Optional[typing.Any],
                             parse_obj_as(
@@ -378,6 +399,16 @@ class AsyncAudioClient:
                         ),
                     )
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 402:
                 raise PaymentRequiredError(
                     typing.cast(
@@ -484,6 +515,16 @@ class AsyncAudioClient:
                 await _response.aread()
                 if _response.status_code == 400:
                     raise BadRequestError(
+                        typing.cast(
+                            typing.Optional[typing.Any],
+                            parse_obj_as(
+                                type_=typing.Optional[typing.Any],  # type: ignore
+                                object_=_response.json(),
+                            ),
+                        )
+                    )
+                if _response.status_code == 401:
+                    raise UnauthorizedError(
                         typing.cast(
                             typing.Optional[typing.Any],
                             parse_obj_as(

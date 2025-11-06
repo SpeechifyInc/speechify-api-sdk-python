@@ -5,6 +5,7 @@ from ...core.client_wrapper import SyncClientWrapper
 from ...core.request_options import RequestOptions
 from ..types.get_voice import GetVoice
 from ...core.pydantic_utilities import parse_obj_as
+from ..errors.unauthorized_error import UnauthorizedError
 from ..errors.not_found_error import NotFoundError
 from ..errors.internal_server_error import InternalServerError
 from json.decoder import JSONDecodeError
@@ -15,7 +16,6 @@ from ..types.created_voice import CreatedVoice
 from ..errors.bad_request_error import BadRequestError
 from ..errors.payment_required_error import PaymentRequiredError
 from ...core.jsonable_encoder import jsonable_encoder
-from ..errors.unauthorized_error import UnauthorizedError
 from ...core.client_wrapper import AsyncClientWrapper
 
 # this is used as the default value for optional parameters
@@ -62,6 +62,16 @@ class VoicesClient:
                         type_=typing.List[GetVoice],  # type: ignore
                         object_=_response.json(),
                     ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
@@ -183,6 +193,16 @@ class VoicesClient:
                         ),
                     )
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 402:
                 raise PaymentRequiredError(
                     typing.cast(
@@ -245,6 +265,16 @@ class VoicesClient:
                 return
             if _response.status_code == 400:
                 raise BadRequestError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
                     typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
@@ -404,6 +434,16 @@ class AsyncVoicesClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -532,6 +572,16 @@ class AsyncVoicesClient:
                         ),
                     )
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 402:
                 raise PaymentRequiredError(
                     typing.cast(
@@ -602,6 +652,16 @@ class AsyncVoicesClient:
                 return
             if _response.status_code == 400:
                 raise BadRequestError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
                     typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(

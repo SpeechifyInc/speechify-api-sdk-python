@@ -7,6 +7,7 @@ from ...core.request_options import RequestOptions
 from ..types.access_token import AccessToken
 from ...core.pydantic_utilities import parse_obj_as
 from ..errors.bad_request_error import BadRequestError
+from ..errors.unauthorized_error import UnauthorizedError
 from json.decoder import JSONDecodeError
 from ...core.api_error import ApiError
 from ...core.client_wrapper import AsyncClientWrapper
@@ -75,6 +76,16 @@ class AuthClient:
                 )
             if _response.status_code == 400:
                 raise BadRequestError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
                     typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
@@ -157,6 +168,16 @@ class AsyncAuthClient:
                 )
             if _response.status_code == 400:
                 raise BadRequestError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
                     typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
