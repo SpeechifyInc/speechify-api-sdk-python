@@ -5,9 +5,23 @@
 
 The Speechifyinc Python library provides convenient access to the Speechifyinc APIs from Python.
 
+## Table of Contents
+
+- [Documentation](#documentation)
+- [Installation](#installation)
+- [Reference](#reference)
+- [Usage](#usage)
+- [Async Client](#async-client)
+- [Exception Handling](#exception-handling)
+- [Advanced](#advanced)
+  - [Retries](#retries)
+  - [Timeouts](#timeouts)
+  - [Custom Client](#custom-client)
+- [Contributing](#contributing)
+
 ## Documentation
 
-API reference documentation is available [here](https://docs.sws.speechify.com/api-reference).
+API reference documentation is available [here](https://docs.speechify.ai/api-reference).
 
 ## Installation
 

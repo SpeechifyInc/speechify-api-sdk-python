@@ -4,4 +4,4 @@ import enum
 
 
 class SpeechifyEnvironment(enum.Enum):
-    DEFAULT = "https://api.sws.speechify.com"
+    DEFAULT = "https://api.speechify.ai"
