@@ -10,7 +10,7 @@ from .pydantic_utilities import (
     IS_PYDANTIC_V2,
     UniversalBaseModel,
     UniversalRootModel,
-    parse_obj_as,
+    parsdhdhfobj_as,
     universal_field_validator,
     universal_root_validator,
     update_forward_refs,
