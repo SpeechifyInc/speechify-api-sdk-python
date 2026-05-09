@@ -10,7 +10,7 @@ from ..errors.not_found_error import NotFoundError
 from ..errors.internal_server_error import InternalServerError
 from json.decoder import JSONDecodeError
 from ...core.api_error import ApiError
-from .types.voices_create_request_gender import VoicesCreateRequestGender
+from .types.create_voices_request_gender import CreateVoicesRequestGender
 from ... import core
 from ..types.created_voice import CreatedVoice
 from ..errors.bad_request_error import BadRequestError
@@ -102,7 +102,7 @@ class VoicesClient:
         self,
         *,
         name: str,
-        gender: VoicesCreateRequestGender,
+        gender: CreateVoicesRequestGender,
         sample: core.File,
         consent: str,
         locale: typing.Optional[str] = OMIT,
@@ -117,7 +117,7 @@ class VoicesClient:
         name : str
             Name of the personal voice
 
-        gender : VoicesCreateRequestGender
+        gender : CreateVoicesRequestGender
             Gender marker for the personal voice
             male GenderMale
             female GenderFemale
@@ -326,6 +326,17 @@ class VoicesClient:
         ------
         typing.Iterator[bytes]
             Voice sample audio file
+
+        Examples
+        --------
+        from speechify import Speechify
+
+        client = Speechify(
+            token="YOUR_TOKEN",
+        )
+        client.tts.voices.download_sample(
+            id="id",
+        )
         """
         with self._client_wrapper.httpx_client.stream(
             f"v1/voices/{jsonable_encoder(id)}/sample",
@@ -473,7 +484,7 @@ class AsyncVoicesClient:
         self,
         *,
         name: str,
-        gender: VoicesCreateRequestGender,
+        gender: CreateVoicesRequestGender,
         sample: core.File,
         consent: str,
         locale: typing.Optional[str] = OMIT,
@@ -488,7 +499,7 @@ class AsyncVoicesClient:
         name : str
             Name of the personal voice
 
-        gender : VoicesCreateRequestGender
+        gender : CreateVoicesRequestGender
             Gender marker for the personal voice
             male GenderMale
             female GenderFemale
@@ -713,6 +724,25 @@ class AsyncVoicesClient:
         ------
         typing.AsyncIterator[bytes]
             Voice sample audio file
+
+        Examples
+        --------
+        import asyncio
+
+        from speechify import AsyncSpeechify
+
+        client = AsyncSpeechify(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.tts.voices.download_sample(
+                id="id",
+            )
+
+
+        asyncio.run(main())
         """
         async with self._client_wrapper.httpx_client.stream(
             f"v1/voices/{jsonable_encoder(id)}/sample",

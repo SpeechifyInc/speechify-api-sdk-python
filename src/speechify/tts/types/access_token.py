@@ -4,6 +4,7 @@ from ...core.pydantic_utilities import UniversalBaseModel
 import typing
 import pydantic
 from .access_token_scope import AccessTokenScope
+from .access_token_token_type import AccessTokenTokenType
 from ...core.pydantic_utilities import IS_PYDANTIC_V2
 
 
@@ -19,7 +20,7 @@ class AccessToken(UniversalBaseModel):
     The scope, or a space-delimited list of scopes the token is issued for
     """
 
-    token_type: typing.Optional[typing.Literal["bearer"]] = pydantic.Field(default=None)
+    token_type: typing.Optional[AccessTokenTokenType] = pydantic.Field(default=None)
     """
     Token type
     """

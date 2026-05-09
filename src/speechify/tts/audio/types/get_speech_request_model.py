@@ -3,5 +3,5 @@
 import typing
 
 GetSpeechRequestModel = typing.Union[
-    typing.Literal["simba-base", "simba-english", "simba-multilingual", "simba-turbo"], typing.Any
+    typing.Literal["simba-base", "simba-english", "simba-multilingual", "simba-turbo", "simba-3.0"], typing.Any
 ]

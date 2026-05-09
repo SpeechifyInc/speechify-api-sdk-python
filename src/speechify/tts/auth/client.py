@@ -2,6 +2,7 @@
 
 import typing
 from ...core.client_wrapper import SyncClientWrapper
+from .types.create_access_token_request_grant_type import CreateAccessTokenRequestGrantType
 from .types.create_access_token_request_scope import CreateAccessTokenRequestScope
 from ...core.request_options import RequestOptions
 from ..types.access_token import AccessToken
@@ -23,6 +24,7 @@ class AuthClient:
     def create_access_token(
         self,
         *,
+        grant_type: CreateAccessTokenRequestGrantType,
         scope: typing.Optional[CreateAccessTokenRequestScope] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AccessToken:
@@ -31,6 +33,9 @@ class AuthClient:
 
         Parameters
         ----------
+        grant_type : CreateAccessTokenRequestGrantType
+            in: body
+
         scope : typing.Optional[CreateAccessTokenRequestScope]
             The scope, or a space-delimited list of scopes the token is requested for
             in: body
@@ -50,14 +55,16 @@ class AuthClient:
         client = Speechify(
             token="YOUR_TOKEN",
         )
-        client.tts.auth.create_access_token()
+        client.tts.auth.create_access_token(
+            grant_type="client_credentials",
+        )
         """
         _response = self._client_wrapper.httpx_client.request(
             "v1/auth/token",
             method="POST",
             json={
+                "grant_type": grant_type,
                 "scope": scope,
-                "grant_type": "client_credentials",
             },
             headers={
                 "content-type": "application/json",
@@ -107,6 +114,7 @@ class AsyncAuthClient:
     async def create_access_token(
         self,
         *,
+        grant_type: CreateAccessTokenRequestGrantType,
         scope: typing.Optional[CreateAccessTokenRequestScope] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AccessToken:
@@ -115,6 +123,9 @@ class AsyncAuthClient:
 
         Parameters
         ----------
+        grant_type : CreateAccessTokenRequestGrantType
+            in: body
+
         scope : typing.Optional[CreateAccessTokenRequestScope]
             The scope, or a space-delimited list of scopes the token is requested for
             in: body
@@ -139,7 +150,9 @@ class AsyncAuthClient:
 
 
         async def main() -> None:
-            await client.tts.auth.create_access_token()
+            await client.tts.auth.create_access_token(
+                grant_type="client_credentials",
+            )
 
 
         asyncio.run(main())
@@ -148,8 +161,8 @@ class AsyncAuthClient:
             "v1/auth/token",
             method="POST",
             json={
+                "grant_type": grant_type,
                 "scope": scope,
-                "grant_type": "client_credentials",
             },
             headers={
                 "content-type": "application/json",

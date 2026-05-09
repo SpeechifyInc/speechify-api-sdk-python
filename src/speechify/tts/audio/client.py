@@ -16,7 +16,7 @@ from ..errors.forbidden_error import ForbiddenError
 from ..errors.internal_server_error import InternalServerError
 from json.decoder import JSONDecodeError
 from ...core.api_error import ApiError
-from .types.audio_stream_request_accept import AudioStreamRequestAccept
+from .types.stream_audio_request_accept import StreamAudioRequestAccept
 from .types.get_stream_request_model import GetStreamRequestModel
 from ..types.get_stream_options_request import GetStreamOptionsRequest
 from ...core.client_wrapper import AsyncClientWrapper
@@ -61,7 +61,8 @@ class AudioClient:
             Please refer to the list of the supported languages and recommendations regarding this parameter: https://docs.speechify.ai/docs/language-support.
 
         model : typing.Optional[GetSpeechRequestModel]
-            Model used for audio synthesis. `simba-base` and `simba-turbo` are deprecated. Use `simba-english` or `simba-multilingual` instead.
+            Model used for audio synthesis. `simba-base` and `simba-turbo` are deprecated.
+            `simba-3.0` is the new streaming-native model with lower TTFB and richer expressivity. Currently English only; multilingual coming soon. Non-English voices return 400 until multilingual support ships.
 
         options : typing.Optional[GetSpeechOptionsRequest]
 
@@ -171,7 +172,7 @@ class AudioClient:
     def stream(
         self,
         *,
-        accept: AudioStreamRequestAccept,
+        accept: StreamAudioRequestAccept,
         input: str,
         voice_id: str,
         language: typing.Optional[str] = OMIT,
@@ -184,7 +185,7 @@ class AudioClient:
 
         Parameters
         ----------
-        accept : AudioStreamRequestAccept
+        accept : StreamAudioRequestAccept
 
         input : str
             Plain text or SSML to be synthesized to speech.
@@ -199,7 +200,8 @@ class AudioClient:
             Please refer to the list of the supported languages and recommendations regarding this parameter: https://docs.speechify.ai/docs/language-support.
 
         model : typing.Optional[GetStreamRequestModel]
-            Model used for audio synthesis. `simba-base` and `simba-turbo` are deprecated. Use `simba-english` or `simba-multilingual` instead.
+            Model used for audio synthesis. `simba-base` and `simba-turbo` are deprecated.
+            `simba-3.0` is the new streaming-native model with lower TTFB and richer expressivity. Currently English only; multilingual coming soon. Non-English voices return 400 until multilingual support ships.
 
         options : typing.Optional[GetStreamOptionsRequest]
 
@@ -210,6 +212,19 @@ class AudioClient:
         ------
         typing.Iterator[bytes]
 
+
+        Examples
+        --------
+        from speechify import Speechify
+
+        client = Speechify(
+            token="YOUR_TOKEN",
+        )
+        client.tts.audio.stream(
+            accept="audio/mpeg",
+            input="input",
+            voice_id="voice_id",
+        )
         """
         with self._client_wrapper.httpx_client.stream(
             "v1/audio/stream",
@@ -329,7 +344,8 @@ class AsyncAudioClient:
             Please refer to the list of the supported languages and recommendations regarding this parameter: https://docs.speechify.ai/docs/language-support.
 
         model : typing.Optional[GetSpeechRequestModel]
-            Model used for audio synthesis. `simba-base` and `simba-turbo` are deprecated. Use `simba-english` or `simba-multilingual` instead.
+            Model used for audio synthesis. `simba-base` and `simba-turbo` are deprecated.
+            `simba-3.0` is the new streaming-native model with lower TTFB and richer expressivity. Currently English only; multilingual coming soon. Non-English voices return 400 until multilingual support ships.
 
         options : typing.Optional[GetSpeechOptionsRequest]
 
@@ -447,7 +463,7 @@ class AsyncAudioClient:
     async def stream(
         self,
         *,
-        accept: AudioStreamRequestAccept,
+        accept: StreamAudioRequestAccept,
         input: str,
         voice_id: str,
         language: typing.Optional[str] = OMIT,
@@ -460,7 +476,7 @@ class AsyncAudioClient:
 
         Parameters
         ----------
-        accept : AudioStreamRequestAccept
+        accept : StreamAudioRequestAccept
 
         input : str
             Plain text or SSML to be synthesized to speech.
@@ -475,7 +491,8 @@ class AsyncAudioClient:
             Please refer to the list of the supported languages and recommendations regarding this parameter: https://docs.speechify.ai/docs/language-support.
 
         model : typing.Optional[GetStreamRequestModel]
-            Model used for audio synthesis. `simba-base` and `simba-turbo` are deprecated. Use `simba-english` or `simba-multilingual` instead.
+            Model used for audio synthesis. `simba-base` and `simba-turbo` are deprecated.
+            `simba-3.0` is the new streaming-native model with lower TTFB and richer expressivity. Currently English only; multilingual coming soon. Non-English voices return 400 until multilingual support ships.
 
         options : typing.Optional[GetStreamOptionsRequest]
 
@@ -486,6 +503,27 @@ class AsyncAudioClient:
         ------
         typing.AsyncIterator[bytes]
 
+
+        Examples
+        --------
+        import asyncio
+
+        from speechify import AsyncSpeechify
+
+        client = AsyncSpeechify(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.tts.audio.stream(
+                accept="audio/mpeg",
+                input="input",
+                voice_id="voice_id",
+            )
+
+
+        asyncio.run(main())
         """
         async with self._client_wrapper.httpx_client.stream(
             "v1/audio/stream",

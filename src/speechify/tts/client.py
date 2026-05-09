@@ -4,10 +4,28 @@ from ..core.client_wrapper import SyncClientWrapper
 from .audio.client import AudioClient
 from .auth.client import AuthClient
 from .voices.client import VoicesClient
+from .agents.client import AgentsClient
+from .tools.client import ToolsClient
+from .conversations.client import ConversationsClient
+from .knowledge_bases.client import KnowledgeBasesClient
+from .memories.client import MemoriesClient
+from .phone_numbers.client import PhoneNumbersClient
+from .sip_trunks.client import SipTrunksClient
+from .outbound_calls.client import OutboundCallsClient
+from .workspaces.client import WorkspacesClient
 from ..core.client_wrapper import AsyncClientWrapper
 from .audio.client import AsyncAudioClient
 from .auth.client import AsyncAuthClient
 from .voices.client import AsyncVoicesClient
+from .agents.client import AsyncAgentsClient
+from .tools.client import AsyncToolsClient
+from .conversations.client import AsyncConversationsClient
+from .knowledge_bases.client import AsyncKnowledgeBasesClient
+from .memories.client import AsyncMemoriesClient
+from .phone_numbers.client import AsyncPhoneNumbersClient
+from .sip_trunks.client import AsyncSipTrunksClient
+from .outbound_calls.client import AsyncOutboundCallsClient
+from .workspaces.client import AsyncWorkspacesClient
 
 
 class TtsClient:
@@ -16,6 +34,15 @@ class TtsClient:
         self.audio = AudioClient(client_wrapper=self._client_wrapper)
         self.auth = AuthClient(client_wrapper=self._client_wrapper)
         self.voices = VoicesClient(client_wrapper=self._client_wrapper)
+        self.agents = AgentsClient(client_wrapper=self._client_wrapper)
+        self.tools = ToolsClient(client_wrapper=self._client_wrapper)
+        self.conversations = ConversationsClient(client_wrapper=self._client_wrapper)
+        self.knowledge_bases = KnowledgeBasesClient(client_wrapper=self._client_wrapper)
+        self.memories = MemoriesClient(client_wrapper=self._client_wrapper)
+        self.phone_numbers = PhoneNumbersClient(client_wrapper=self._client_wrapper)
+        self.sip_trunks = SipTrunksClient(client_wrapper=self._client_wrapper)
+        self.outbound_calls = OutboundCallsClient(client_wrapper=self._client_wrapper)
+        self.workspaces = WorkspacesClient(client_wrapper=self._client_wrapper)
 
 
 class AsyncTtsClient:
@@ -24,3 +51,12 @@ class AsyncTtsClient:
         self.audio = AsyncAudioClient(client_wrapper=self._client_wrapper)
         self.auth = AsyncAuthClient(client_wrapper=self._client_wrapper)
         self.voices = AsyncVoicesClient(client_wrapper=self._client_wrapper)
+        self.agents = AsyncAgentsClient(client_wrapper=self._client_wrapper)
+        self.tools = AsyncToolsClient(client_wrapper=self._client_wrapper)
+        self.conversations = AsyncConversationsClient(client_wrapper=self._client_wrapper)
+        self.knowledge_bases = AsyncKnowledgeBasesClient(client_wrapper=self._client_wrapper)
+        self.memories = AsyncMemoriesClient(client_wrapper=self._client_wrapper)
+        self.phone_numbers = AsyncPhoneNumbersClient(client_wrapper=self._client_wrapper)
+        self.sip_trunks = AsyncSipTrunksClient(client_wrapper=self._client_wrapper)
+        self.outbound_calls = AsyncOutboundCallsClient(client_wrapper=self._client_wrapper)
+        self.workspaces = AsyncWorkspacesClient(client_wrapper=self._client_wrapper)
