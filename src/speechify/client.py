@@ -5,8 +5,10 @@ from .environment import SpeechifyEnvironment
 import os
 import httpx
 from .core.client_wrapper import SyncClientWrapper
+from .agent.client import AgentClient
 from .tts.client import TtsClient
 from .core.client_wrapper import AsyncClientWrapper
+from .agent.client import AsyncAgentClient
 from .tts.client import AsyncTtsClient
 
 
@@ -68,6 +70,7 @@ class Speechify:
             else httpx.Client(timeout=_defaulted_timeout),
             timeout=_defaulted_timeout,
         )
+        self.agent = AgentClient(client_wrapper=self._client_wrapper)
         self.tts = TtsClient(client_wrapper=self._client_wrapper)
 
 
@@ -129,6 +132,7 @@ class AsyncSpeechify:
             else httpx.AsyncClient(timeout=_defaulted_timeout),
             timeout=_defaulted_timeout,
         )
+        self.agent = AsyncAgentClient(client_wrapper=self._client_wrapper)
         self.tts = AsyncTtsClient(client_wrapper=self._client_wrapper)
 
 

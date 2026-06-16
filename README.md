@@ -13,6 +13,7 @@ The Speechifyinc Python library provides convenient access to the Speechifyinc A
 - [Usage](#usage)
 - [Async Client](#async-client)
 - [Exception Handling](#exception-handling)
+- [Pagination](#pagination)
 - [Advanced](#advanced)
   - [Retries](#retries)
   - [Timeouts](#timeouts)
@@ -43,8 +44,10 @@ from speechify import Speechify
 client = Speechify(
     token="YOUR_TOKEN",
 )
-client.tts.audio.speech(
-    input="input",
+client.agent.create(
+    name="name",
+    prompt="prompt",
+    first_message="first_message",
     voice_id="voice_id",
 )
 ```
@@ -64,8 +67,10 @@ client = AsyncSpeechify(
 
 
 async def main() -> None:
-    await client.tts.audio.speech(
-        input="input",
+    await client.agent.create(
+        name="name",
+        prompt="prompt",
+        first_message="first_message",
         voice_id="voice_id",
     )
 
@@ -82,10 +87,28 @@ will be thrown.
 from speechify.core.api_error import ApiError
 
 try:
-    client.tts.audio.speech(...)
+    client.agent.create(...)
 except ApiError as e:
     print(e.status_code)
     print(e.body)
+```
+
+## Pagination
+
+Paginated requests will return a `SyncPager` or `AsyncPager`, which can be used as generators for the underlying object.
+
+```python
+from speechify import Speechify
+
+client = Speechify(
+    token="YOUR_TOKEN",
+)
+response = client.agent.tools.list()
+for item in response:
+    yield item
+# alternatively, you can paginate page-by-page
+for page in response.iter_pages():
+    yield page
 ```
 
 ## Advanced
@@ -105,7 +128,7 @@ A request is deemed retryable when any of the following HTTP status codes is ret
 Use the `max_retries` request option to configure this behavior.
 
 ```python
-client.tts.audio.speech(..., request_options={
+client.agent.create(..., request_options={
     "max_retries": 1
 })
 ```
@@ -125,7 +148,7 @@ client = Speechify(
 
 
 # Override timeout for a specific method
-client.tts.audio.speech(..., request_options={
+client.agent.create(..., request_options={
     "timeout_in_seconds": 1
 })
 ```

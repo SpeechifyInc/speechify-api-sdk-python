@@ -3,7 +3,7 @@ name = "speechify-api"
 
 [tool.poetry]
 name = "speechify-api"
-version = "1.2.3"
+version = "1.2.4"
 description = "Official Speechify API SDK"
 readme = "README.md"
 authors = [
@@ -47,6 +47,7 @@ Repository = 'https://github.com/speechifyinc/speechify-api-sdk-python'
 [tool.poetry.dependencies]
 python = "^3.8"
 httpx = ">=0.21.2"
+livekit = { version = ">=1.1,<2", python = ">=3.9"}
 pydantic = ">= 1.9.2"
 pydantic-core = "^2.18.2"
 typing_extensions = ">= 4.0.0"
