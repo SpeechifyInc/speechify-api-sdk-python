@@ -4,11 +4,10 @@ import typing
 from .environment import SpeechifyEnvironment
 import os
 import httpx
+from .core.api_error import ApiError
 from .core.client_wrapper import SyncClientWrapper
-from .agent.client import AgentClient
 from .tts.client import TtsClient
 from .core.client_wrapper import AsyncClientWrapper
-from .agent.client import AsyncAgentClient
 from .tts.client import AsyncTtsClient
 
 
@@ -60,6 +59,10 @@ class Speechify:
         httpx_client: typing.Optional[httpx.Client] = None,
     ):
         _defaulted_timeout = timeout if timeout is not None else 60 if httpx_client is None else None
+        if token is None:
+            raise ApiError(
+                body="The client must be instantiated be either passing in token or setting SPEECHIFY_API_KEY"
+            )
         self._client_wrapper = SyncClientWrapper(
             base_url=_get_base_url(base_url=base_url, environment=environment),
             token=token,
@@ -70,7 +73,6 @@ class Speechify:
             else httpx.Client(timeout=_defaulted_timeout),
             timeout=_defaulted_timeout,
         )
-        self.agent = AgentClient(client_wrapper=self._client_wrapper)
         self.tts = TtsClient(client_wrapper=self._client_wrapper)
 
 
@@ -122,6 +124,10 @@ class AsyncSpeechify:
         httpx_client: typing.Optional[httpx.AsyncClient] = None,
     ):
         _defaulted_timeout = timeout if timeout is not None else 60 if httpx_client is None else None
+        if token is None:
+            raise ApiError(
+                body="The client must be instantiated be either passing in token or setting SPEECHIFY_API_KEY"
+            )
         self._client_wrapper = AsyncClientWrapper(
             base_url=_get_base_url(base_url=base_url, environment=environment),
             token=token,
@@ -132,7 +138,6 @@ class AsyncSpeechify:
             else httpx.AsyncClient(timeout=_defaulted_timeout),
             timeout=_defaulted_timeout,
         )
-        self.agent = AsyncAgentClient(client_wrapper=self._client_wrapper)
         self.tts = AsyncTtsClient(client_wrapper=self._client_wrapper)
 
 
