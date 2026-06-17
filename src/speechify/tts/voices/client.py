@@ -3,19 +3,25 @@
 import typing
 from ...core.client_wrapper import SyncClientWrapper
 from ...core.request_options import RequestOptions
-from ..types.get_voice import GetVoice
+from ...types.get_voice import GetVoice
 from ...core.pydantic_utilities import parse_obj_as
-from ..errors.unauthorized_error import UnauthorizedError
-from ..errors.not_found_error import NotFoundError
-from ..errors.internal_server_error import InternalServerError
+from ...errors.unauthorized_error import UnauthorizedError
+from ...errors.forbidden_error import ForbiddenError
+from ...types.error import Error
+from ...errors.too_many_requests_error import TooManyRequestsError
+from ...errors.internal_server_error import InternalServerError
 from json.decoder import JSONDecodeError
 from ...core.api_error import ApiError
 from .types.create_voices_request_gender import CreateVoicesRequestGender
 from ... import core
-from ..types.created_voice import CreatedVoice
-from ..errors.bad_request_error import BadRequestError
-from ..errors.payment_required_error import PaymentRequiredError
+from ...types.created_voice import CreatedVoice
+from ...errors.bad_request_error import BadRequestError
+from ...errors.payment_required_error import PaymentRequiredError
+from ...errors.unprocessable_entity_error import UnprocessableEntityError
+from ...errors.bad_gateway_error import BadGatewayError
+from ...errors.service_unavailable_error import ServiceUnavailableError
 from ...core.jsonable_encoder import jsonable_encoder
+from ...errors.not_found_error import NotFoundError
 from ...core.client_wrapper import AsyncClientWrapper
 
 # this is used as the default value for optional parameters
@@ -73,12 +79,22 @@ class VoicesClient:
                         ),
                     )
                 )
-            if _response.status_code == 404:
-                raise NotFoundError(
+            if _response.status_code == 403:
+                raise ForbiddenError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        Error,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -86,9 +102,9 @@ class VoicesClient:
             if _response.status_code == 500:
                 raise InternalServerError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        Error,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=Error,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -206,9 +222,39 @@ class VoicesClient:
             if _response.status_code == 402:
                 raise PaymentRequiredError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        Error,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 422:
+                raise UnprocessableEntityError(
+                    typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -216,9 +262,29 @@ class VoicesClient:
             if _response.status_code == 500:
                 raise InternalServerError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        Error,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 502:
+                raise BadGatewayError(
+                    typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 503:
+                raise ServiceUnavailableError(
+                    typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -283,6 +349,16 @@ class VoicesClient:
                         ),
                     )
                 )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -293,12 +369,42 @@ class VoicesClient:
                         ),
                     )
                 )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 500:
                 raise InternalServerError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        Error,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 502:
+                raise BadGatewayError(
+                    typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 503:
+                raise ServiceUnavailableError(
+                    typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -370,6 +476,16 @@ class VoicesClient:
                             ),
                         )
                     )
+                if _response.status_code == 403:
+                    raise ForbiddenError(
+                        typing.cast(
+                            Error,
+                            parse_obj_as(
+                                type_=Error,  # type: ignore
+                                object_=_response.json(),
+                            ),
+                        )
+                    )
                 if _response.status_code == 404:
                     raise NotFoundError(
                         typing.cast(
@@ -380,12 +496,42 @@ class VoicesClient:
                             ),
                         )
                     )
+                if _response.status_code == 429:
+                    raise TooManyRequestsError(
+                        typing.cast(
+                            Error,
+                            parse_obj_as(
+                                type_=Error,  # type: ignore
+                                object_=_response.json(),
+                            ),
+                        )
+                    )
                 if _response.status_code == 500:
                     raise InternalServerError(
                         typing.cast(
-                            typing.Optional[typing.Any],
+                            Error,
                             parse_obj_as(
-                                type_=typing.Optional[typing.Any],  # type: ignore
+                                type_=Error,  # type: ignore
+                                object_=_response.json(),
+                            ),
+                        )
+                    )
+                if _response.status_code == 502:
+                    raise BadGatewayError(
+                        typing.cast(
+                            Error,
+                            parse_obj_as(
+                                type_=Error,  # type: ignore
+                                object_=_response.json(),
+                            ),
+                        )
+                    )
+                if _response.status_code == 503:
+                    raise ServiceUnavailableError(
+                        typing.cast(
+                            Error,
+                            parse_obj_as(
+                                type_=Error,  # type: ignore
                                 object_=_response.json(),
                             ),
                         )
@@ -455,12 +601,22 @@ class AsyncVoicesClient:
                         ),
                     )
                 )
-            if _response.status_code == 404:
-                raise NotFoundError(
+            if _response.status_code == 403:
+                raise ForbiddenError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        Error,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -468,9 +624,9 @@ class AsyncVoicesClient:
             if _response.status_code == 500:
                 raise InternalServerError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        Error,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=Error,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -596,9 +752,39 @@ class AsyncVoicesClient:
             if _response.status_code == 402:
                 raise PaymentRequiredError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        Error,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 422:
+                raise UnprocessableEntityError(
+                    typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -606,9 +792,29 @@ class AsyncVoicesClient:
             if _response.status_code == 500:
                 raise InternalServerError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        Error,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 502:
+                raise BadGatewayError(
+                    typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 503:
+                raise ServiceUnavailableError(
+                    typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -681,6 +887,16 @@ class AsyncVoicesClient:
                         ),
                     )
                 )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -691,12 +907,42 @@ class AsyncVoicesClient:
                         ),
                     )
                 )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 500:
                 raise InternalServerError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        Error,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 502:
+                raise BadGatewayError(
+                    typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 503:
+                raise ServiceUnavailableError(
+                    typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -776,6 +1022,16 @@ class AsyncVoicesClient:
                             ),
                         )
                     )
+                if _response.status_code == 403:
+                    raise ForbiddenError(
+                        typing.cast(
+                            Error,
+                            parse_obj_as(
+                                type_=Error,  # type: ignore
+                                object_=_response.json(),
+                            ),
+                        )
+                    )
                 if _response.status_code == 404:
                     raise NotFoundError(
                         typing.cast(
@@ -786,12 +1042,42 @@ class AsyncVoicesClient:
                             ),
                         )
                     )
+                if _response.status_code == 429:
+                    raise TooManyRequestsError(
+                        typing.cast(
+                            Error,
+                            parse_obj_as(
+                                type_=Error,  # type: ignore
+                                object_=_response.json(),
+                            ),
+                        )
+                    )
                 if _response.status_code == 500:
                     raise InternalServerError(
                         typing.cast(
-                            typing.Optional[typing.Any],
+                            Error,
                             parse_obj_as(
-                                type_=typing.Optional[typing.Any],  # type: ignore
+                                type_=Error,  # type: ignore
+                                object_=_response.json(),
+                            ),
+                        )
+                    )
+                if _response.status_code == 502:
+                    raise BadGatewayError(
+                        typing.cast(
+                            Error,
+                            parse_obj_as(
+                                type_=Error,  # type: ignore
+                                object_=_response.json(),
+                            ),
+                        )
+                    )
+                if _response.status_code == 503:
+                    raise ServiceUnavailableError(
+                        typing.cast(
+                            Error,
+                            parse_obj_as(
+                                type_=Error,  # type: ignore
                                 object_=_response.json(),
                             ),
                         )

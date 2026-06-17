@@ -44,8 +44,10 @@ client = Speechify(
     token="YOUR_TOKEN",
 )
 client.tts.audio.speech(
-    input="input",
-    voice_id="voice_id",
+    audio_format="mp3",
+    input="Hello! This is the Speechify text-to-speech API.",
+    model="simba-english",
+    voice_id="george",
 )
 ```
 
@@ -65,8 +67,10 @@ client = AsyncSpeechify(
 
 async def main() -> None:
     await client.tts.audio.speech(
-        input="input",
-        voice_id="voice_id",
+        audio_format="mp3",
+        input="Hello! This is the Speechify text-to-speech API.",
+        model="simba-english",
+        voice_id="george",
     )
 
 

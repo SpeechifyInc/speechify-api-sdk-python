@@ -4,6 +4,7 @@ import typing
 from .environment import SpeechifyEnvironment
 import os
 import httpx
+from .core.api_error import ApiError
 from .core.client_wrapper import SyncClientWrapper
 from .tts.client import TtsClient
 from .core.client_wrapper import AsyncClientWrapper
@@ -58,6 +59,10 @@ class Speechify:
         httpx_client: typing.Optional[httpx.Client] = None,
     ):
         _defaulted_timeout = timeout if timeout is not None else 60 if httpx_client is None else None
+        if token is None:
+            raise ApiError(
+                body="The client must be instantiated be either passing in token or setting SPEECHIFY_API_KEY"
+            )
         self._client_wrapper = SyncClientWrapper(
             base_url=_get_base_url(base_url=base_url, environment=environment),
             token=token,
@@ -119,6 +124,10 @@ class AsyncSpeechify:
         httpx_client: typing.Optional[httpx.AsyncClient] = None,
     ):
         _defaulted_timeout = timeout if timeout is not None else 60 if httpx_client is None else None
+        if token is None:
+            raise ApiError(
+                body="The client must be instantiated be either passing in token or setting SPEECHIFY_API_KEY"
+            )
         self._client_wrapper = AsyncClientWrapper(
             base_url=_get_base_url(base_url=base_url, environment=environment),
             token=token,

@@ -4,21 +4,26 @@ import typing
 from ...core.client_wrapper import SyncClientWrapper
 from .types.get_speech_request_audio_format import GetSpeechRequestAudioFormat
 from .types.get_speech_request_model import GetSpeechRequestModel
-from ..types.get_speech_options_request import GetSpeechOptionsRequest
+from ...types.get_speech_options_request import GetSpeechOptionsRequest
 from ...core.request_options import RequestOptions
-from ..types.get_speech_response import GetSpeechResponse
+from ...types.get_speech_response import GetSpeechResponse
 from ...core.serialization import convert_and_respect_annotation_metadata
 from ...core.pydantic_utilities import parse_obj_as
-from ..errors.bad_request_error import BadRequestError
-from ..errors.unauthorized_error import UnauthorizedError
-from ..errors.payment_required_error import PaymentRequiredError
-from ..errors.forbidden_error import ForbiddenError
-from ..errors.internal_server_error import InternalServerError
+from ...errors.bad_request_error import BadRequestError
+from ...errors.unauthorized_error import UnauthorizedError
+from ...errors.payment_required_error import PaymentRequiredError
+from ...types.error import Error
+from ...errors.forbidden_error import ForbiddenError
+from ...errors.not_found_error import NotFoundError
+from ...errors.too_many_requests_error import TooManyRequestsError
+from ...errors.internal_server_error import InternalServerError
+from ...errors.bad_gateway_error import BadGatewayError
+from ...errors.service_unavailable_error import ServiceUnavailableError
 from json.decoder import JSONDecodeError
 from ...core.api_error import ApiError
 from .types.stream_audio_request_accept import StreamAudioRequestAccept
 from .types.get_stream_request_model import GetStreamRequestModel
-from ..types.get_stream_options_request import GetStreamOptionsRequest
+from ...types.get_stream_options_request import GetStreamOptionsRequest
 from ...core.client_wrapper import AsyncClientWrapper
 
 # this is used as the default value for optional parameters
@@ -41,7 +46,9 @@ class AudioClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> GetSpeechResponse:
         """
-        Gets the speech data for the given input
+        Synthesize speech audio from text or SSML. Returns the complete audio
+        file plus billing and speech-mark metadata in a single response. For
+        low-latency playback or long-form text, use POST /v1/audio/stream.
 
         Parameters
         ----------
@@ -61,8 +68,7 @@ class AudioClient:
             Please refer to the list of the supported languages and recommendations regarding this parameter: https://docs.speechify.ai/docs/language-support.
 
         model : typing.Optional[GetSpeechRequestModel]
-            Model used for audio synthesis. `simba-base` and `simba-turbo` are deprecated.
-            `simba-3.0` is the new streaming-native model with lower TTFB and richer expressivity. Currently English only; multilingual coming soon. Non-English voices return 400 until multilingual support ships.
+            Model used for audio synthesis. `simba-english` is optimized for English, `simba-multilingual` for non-English or mixed input. `simba-3.0` is the streaming-native model with lower TTFB and richer expressivity. Currently English only; multilingual coming soon. Non-English voices return 400 until multilingual support ships.
 
         options : typing.Optional[GetSpeechOptionsRequest]
 
@@ -72,7 +78,7 @@ class AudioClient:
         Returns
         -------
         GetSpeechResponse
-
+            Synthesized speech audio for the requested input.
 
         Examples
         --------
@@ -82,8 +88,10 @@ class AudioClient:
             token="YOUR_TOKEN",
         )
         client.tts.audio.speech(
-            input="input",
-            voice_id="voice_id",
+            audio_format="mp3",
+            input="Hello! This is the Speechify text-to-speech API.",
+            model="simba-english",
+            voice_id="george",
         )
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -137,9 +145,9 @@ class AudioClient:
             if _response.status_code == 402:
                 raise PaymentRequiredError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        Error,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=Error,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -147,6 +155,16 @@ class AudioClient:
             if _response.status_code == 403:
                 raise ForbiddenError(
                     typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
@@ -154,12 +172,42 @@ class AudioClient:
                         ),
                     )
                 )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 500:
                 raise InternalServerError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        Error,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 502:
+                raise BadGatewayError(
+                    typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 503:
+                raise ServiceUnavailableError(
+                    typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -181,7 +229,10 @@ class AudioClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> typing.Iterator[bytes]:
         """
-        Gets the stream speech for the given input
+        Synthesize speech and stream the audio back as it is generated, for
+        low-latency playback. The Accept header selects the audio container.
+        For short text where receiving the whole file at once is fine, use
+        POST /v1/audio/speech.
 
         Parameters
         ----------
@@ -200,8 +251,7 @@ class AudioClient:
             Please refer to the list of the supported languages and recommendations regarding this parameter: https://docs.speechify.ai/docs/language-support.
 
         model : typing.Optional[GetStreamRequestModel]
-            Model used for audio synthesis. `simba-base` and `simba-turbo` are deprecated.
-            `simba-3.0` is the new streaming-native model with lower TTFB and richer expressivity. Currently English only; multilingual coming soon. Non-English voices return 400 until multilingual support ships.
+            Model used for audio synthesis. `simba-english` is optimized for English, `simba-multilingual` for non-English or mixed input. `simba-3.0` is the streaming-native model with lower TTFB and richer expressivity. Currently English only; multilingual coming soon. Non-English voices return 400 until multilingual support ships.
 
         options : typing.Optional[GetStreamOptionsRequest]
 
@@ -211,7 +261,7 @@ class AudioClient:
         Yields
         ------
         typing.Iterator[bytes]
-
+            Chunked audio stream for the requested input.
 
         Examples
         --------
@@ -275,9 +325,9 @@ class AudioClient:
                 if _response.status_code == 402:
                     raise PaymentRequiredError(
                         typing.cast(
-                            typing.Optional[typing.Any],
+                            Error,
                             parse_obj_as(
-                                type_=typing.Optional[typing.Any],  # type: ignore
+                                type_=Error,  # type: ignore
                                 object_=_response.json(),
                             ),
                         )
@@ -285,6 +335,16 @@ class AudioClient:
                 if _response.status_code == 403:
                     raise ForbiddenError(
                         typing.cast(
+                            Error,
+                            parse_obj_as(
+                                type_=Error,  # type: ignore
+                                object_=_response.json(),
+                            ),
+                        )
+                    )
+                if _response.status_code == 404:
+                    raise NotFoundError(
+                        typing.cast(
                             typing.Optional[typing.Any],
                             parse_obj_as(
                                 type_=typing.Optional[typing.Any],  # type: ignore
@@ -292,12 +352,42 @@ class AudioClient:
                             ),
                         )
                     )
+                if _response.status_code == 429:
+                    raise TooManyRequestsError(
+                        typing.cast(
+                            Error,
+                            parse_obj_as(
+                                type_=Error,  # type: ignore
+                                object_=_response.json(),
+                            ),
+                        )
+                    )
                 if _response.status_code == 500:
                     raise InternalServerError(
                         typing.cast(
-                            typing.Optional[typing.Any],
+                            Error,
                             parse_obj_as(
-                                type_=typing.Optional[typing.Any],  # type: ignore
+                                type_=Error,  # type: ignore
+                                object_=_response.json(),
+                            ),
+                        )
+                    )
+                if _response.status_code == 502:
+                    raise BadGatewayError(
+                        typing.cast(
+                            Error,
+                            parse_obj_as(
+                                type_=Error,  # type: ignore
+                                object_=_response.json(),
+                            ),
+                        )
+                    )
+                if _response.status_code == 503:
+                    raise ServiceUnavailableError(
+                        typing.cast(
+                            Error,
+                            parse_obj_as(
+                                type_=Error,  # type: ignore
                                 object_=_response.json(),
                             ),
                         )
@@ -324,7 +414,9 @@ class AsyncAudioClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> GetSpeechResponse:
         """
-        Gets the speech data for the given input
+        Synthesize speech audio from text or SSML. Returns the complete audio
+        file plus billing and speech-mark metadata in a single response. For
+        low-latency playback or long-form text, use POST /v1/audio/stream.
 
         Parameters
         ----------
@@ -344,8 +436,7 @@ class AsyncAudioClient:
             Please refer to the list of the supported languages and recommendations regarding this parameter: https://docs.speechify.ai/docs/language-support.
 
         model : typing.Optional[GetSpeechRequestModel]
-            Model used for audio synthesis. `simba-base` and `simba-turbo` are deprecated.
-            `simba-3.0` is the new streaming-native model with lower TTFB and richer expressivity. Currently English only; multilingual coming soon. Non-English voices return 400 until multilingual support ships.
+            Model used for audio synthesis. `simba-english` is optimized for English, `simba-multilingual` for non-English or mixed input. `simba-3.0` is the streaming-native model with lower TTFB and richer expressivity. Currently English only; multilingual coming soon. Non-English voices return 400 until multilingual support ships.
 
         options : typing.Optional[GetSpeechOptionsRequest]
 
@@ -355,7 +446,7 @@ class AsyncAudioClient:
         Returns
         -------
         GetSpeechResponse
-
+            Synthesized speech audio for the requested input.
 
         Examples
         --------
@@ -370,8 +461,10 @@ class AsyncAudioClient:
 
         async def main() -> None:
             await client.tts.audio.speech(
-                input="input",
-                voice_id="voice_id",
+                audio_format="mp3",
+                input="Hello! This is the Speechify text-to-speech API.",
+                model="simba-english",
+                voice_id="george",
             )
 
 
@@ -428,9 +521,9 @@ class AsyncAudioClient:
             if _response.status_code == 402:
                 raise PaymentRequiredError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        Error,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=Error,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -438,6 +531,16 @@ class AsyncAudioClient:
             if _response.status_code == 403:
                 raise ForbiddenError(
                     typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
@@ -445,12 +548,42 @@ class AsyncAudioClient:
                         ),
                     )
                 )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 500:
                 raise InternalServerError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        Error,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 502:
+                raise BadGatewayError(
+                    typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 503:
+                raise ServiceUnavailableError(
+                    typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -472,7 +605,10 @@ class AsyncAudioClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> typing.AsyncIterator[bytes]:
         """
-        Gets the stream speech for the given input
+        Synthesize speech and stream the audio back as it is generated, for
+        low-latency playback. The Accept header selects the audio container.
+        For short text where receiving the whole file at once is fine, use
+        POST /v1/audio/speech.
 
         Parameters
         ----------
@@ -491,8 +627,7 @@ class AsyncAudioClient:
             Please refer to the list of the supported languages and recommendations regarding this parameter: https://docs.speechify.ai/docs/language-support.
 
         model : typing.Optional[GetStreamRequestModel]
-            Model used for audio synthesis. `simba-base` and `simba-turbo` are deprecated.
-            `simba-3.0` is the new streaming-native model with lower TTFB and richer expressivity. Currently English only; multilingual coming soon. Non-English voices return 400 until multilingual support ships.
+            Model used for audio synthesis. `simba-english` is optimized for English, `simba-multilingual` for non-English or mixed input. `simba-3.0` is the streaming-native model with lower TTFB and richer expressivity. Currently English only; multilingual coming soon. Non-English voices return 400 until multilingual support ships.
 
         options : typing.Optional[GetStreamOptionsRequest]
 
@@ -502,7 +637,7 @@ class AsyncAudioClient:
         Yields
         ------
         typing.AsyncIterator[bytes]
-
+            Chunked audio stream for the requested input.
 
         Examples
         --------
@@ -574,9 +709,9 @@ class AsyncAudioClient:
                 if _response.status_code == 402:
                     raise PaymentRequiredError(
                         typing.cast(
-                            typing.Optional[typing.Any],
+                            Error,
                             parse_obj_as(
-                                type_=typing.Optional[typing.Any],  # type: ignore
+                                type_=Error,  # type: ignore
                                 object_=_response.json(),
                             ),
                         )
@@ -584,6 +719,16 @@ class AsyncAudioClient:
                 if _response.status_code == 403:
                     raise ForbiddenError(
                         typing.cast(
+                            Error,
+                            parse_obj_as(
+                                type_=Error,  # type: ignore
+                                object_=_response.json(),
+                            ),
+                        )
+                    )
+                if _response.status_code == 404:
+                    raise NotFoundError(
+                        typing.cast(
                             typing.Optional[typing.Any],
                             parse_obj_as(
                                 type_=typing.Optional[typing.Any],  # type: ignore
@@ -591,12 +736,42 @@ class AsyncAudioClient:
                             ),
                         )
                     )
+                if _response.status_code == 429:
+                    raise TooManyRequestsError(
+                        typing.cast(
+                            Error,
+                            parse_obj_as(
+                                type_=Error,  # type: ignore
+                                object_=_response.json(),
+                            ),
+                        )
+                    )
                 if _response.status_code == 500:
                     raise InternalServerError(
                         typing.cast(
-                            typing.Optional[typing.Any],
+                            Error,
                             parse_obj_as(
-                                type_=typing.Optional[typing.Any],  # type: ignore
+                                type_=Error,  # type: ignore
+                                object_=_response.json(),
+                            ),
+                        )
+                    )
+                if _response.status_code == 502:
+                    raise BadGatewayError(
+                        typing.cast(
+                            Error,
+                            parse_obj_as(
+                                type_=Error,  # type: ignore
+                                object_=_response.json(),
+                            ),
+                        )
+                    )
+                if _response.status_code == 503:
+                    raise ServiceUnavailableError(
+                        typing.cast(
+                            Error,
+                            parse_obj_as(
+                                type_=Error,  # type: ignore
                                 object_=_response.json(),
                             ),
                         )
