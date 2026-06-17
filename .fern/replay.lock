@@ -6,5 +6,122 @@ generations:
     timestamp: 2026-06-16T19:30:33.147Z
     cli_version: unknown
     generator_versions: {}
-current_generation: 7d8528c7c1c4b857772e146fb65ece58c11274f3
-patches: []
+  - commit_sha: 92df9bc3e13b50c59afbac896a5ef5b7093e0741
+    tree_hash: 061038e3605d1c75a9143260a1a917f5e15f4e39
+    timestamp: 2026-06-17T09:42:55.210Z
+    cli_version: unknown
+    generator_versions:
+      fernapi/fern-python-sdk: 4.3.19
+current_generation: 92df9bc3e13b50c59afbac896a5ef5b7093e0741
+patches:
+  - id: patch-3ae14425
+    content_hash: sha256:f60544299d0e84b69fb0be022b955a9cbd7a6950b59574db65cc8068e40acb11
+    original_commit: 3ae1442513e6b91d566d7eab5b54d24fe0701a43
+    original_message: "fix(packaging): make the SDK installable from source [DRG-31]"
+    original_author: lspeechify <289678208+lspeechify@users.noreply.github.com>
+    base_generation: 92df9bc3e13b50c59afbac896a5ef5b7093e0741
+    files:
+      - pyproject.toml
+    patch_content: |
+      diff --git a/pyproject.toml b/pyproject.toml
+      index 5f9dc3c..9246d68 100644
+      --- a/pyproject.toml
+      +++ b/pyproject.toml
+      @@ -1,6 +1,3 @@
+      -[project]
+      -name = "speechify-api"
+      -
+       [tool.poetry]
+       name = "speechify-api"
+       version = "1.2.4"
+      @@ -22,7 +19,6 @@ classifiers = [
+           "Intended Audience :: Developers",
+           "Programming Language :: Python",
+           "Programming Language :: Python :: 3",
+      -    "Programming Language :: Python :: 3.8",
+           "Programming Language :: Python :: 3.9",
+           "Programming Language :: Python :: 3.10",
+           "Programming Language :: Python :: 3.11",
+      @@ -39,7 +35,7 @@ packages = [
+           { include = "speechify", from = "src"}
+       ]
+       
+      -[project.urls]
+      +[tool.poetry.urls]
+       Documentation = 'https://docs.speechify.ai/api-reference'
+       Homepage = 'https://docs.speechify.ai'
+       Repository = 'https://github.com/speechifyinc/speechify-api-sdk-python'
+    theirs_snapshot:
+      pyproject.toml: |
+        [tool.poetry]
+        name = "speechify-api"
+        version = "1.2.4"
+        description = "Official Speechify API SDK"
+        readme = "README.md"
+        authors = [
+            "Speechify <support@speechify.com>"
+        ]
+        keywords = [
+            "speechify",
+            "ai",
+            "api",
+            "sdk",
+            "text-to-speech",
+            "tts"
+        ]
+
+        classifiers = [
+            "Intended Audience :: Developers",
+            "Programming Language :: Python",
+            "Programming Language :: Python :: 3",
+            "Programming Language :: Python :: 3.9",
+            "Programming Language :: Python :: 3.10",
+            "Programming Language :: Python :: 3.11",
+            "Programming Language :: Python :: 3.12",
+            "Operating System :: OS Independent",
+            "Operating System :: POSIX",
+            "Operating System :: MacOS",
+            "Operating System :: POSIX :: Linux",
+            "Operating System :: Microsoft :: Windows",
+            "Topic :: Software Development :: Libraries :: Python Modules",
+            "Typing :: Typed"
+        ]
+        packages = [
+            { include = "speechify", from = "src"}
+        ]
+
+        [tool.poetry.urls]
+        Documentation = 'https://docs.speechify.ai/api-reference'
+        Homepage = 'https://docs.speechify.ai'
+        Repository = 'https://github.com/speechifyinc/speechify-api-sdk-python'
+
+        [tool.poetry.dependencies]
+        python = ">=3.9"
+        httpx = ">=0.21.2"
+        livekit = ">=1.1,<2"
+        pydantic = ">= 1.9.2"
+        pydantic-core = "^2.18.2"
+        typing_extensions = ">= 4.0.0"
+
+        [tool.poetry.dev-dependencies]
+        mypy = "1.0.1"
+        pytest = "^7.4.0"
+        pytest-asyncio = "^0.23.5"
+        python-dateutil = "^2.9.0"
+        types-python-dateutil = "^2.9.0.20240316"
+        ruff = "^0.5.6"
+
+        [tool.pytest.ini_options]
+        testpaths = [ "tests" ]
+        asyncio_mode = "auto"
+
+        [tool.mypy]
+        plugins = ["pydantic.mypy"]
+
+        [tool.ruff]
+        line-length = 120
+
+
+        [build-system]
+        requires = ["poetry-core"]
+        build-backend = "poetry.core.masonry.api"
