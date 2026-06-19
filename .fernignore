@@ -1,2 +1,11 @@
 # Specify files that shouldn't be modified by Fern
+
+# Legacy CI workflow replaced by release-please.yml — keep listed so Fern
+# does not regenerate the file after deletion.
 .github/workflows/ci.yml
+
+# Release-please owns versioning, releases, and PyPI publish.
+.github/workflows/release-please.yml
+release-please-config.json
+.release-please-manifest.json
+CHANGELOG.md
