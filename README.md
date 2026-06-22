@@ -43,10 +43,10 @@ Instantiate and use the client with the following:
 from speechify import Speechify
 
 client = Speechify(
-    token="<token>",
+    api_key="<token>",
 )
 
-client.tts.audio.speech(
+client.audio.speech(
     audio_format="mp3",
     input="Hello! This is the Speechify text-to-speech API.",
     model="simba-english",
@@ -77,12 +77,12 @@ import asyncio
 from speechify import AsyncSpeechify
 
 client = AsyncSpeechify(
-    token="<token>",
+    api_key="<token>",
 )
 
 
 async def main() -> None:
-    await client.tts.audio.speech(
+    await client.audio.speech(
         audio_format="mp3",
         input="Hello! This is the Speechify text-to-speech API.",
         model="simba-english",
@@ -102,7 +102,7 @@ will be thrown.
 from speechify.core.api_error import ApiError
 
 try:
-    client.tts.audio.speech(...)
+    client.audio.speech(...)
 except ApiError as e:
     print(e.status_code)
     print(e.body)
@@ -119,7 +119,7 @@ The `.with_raw_response` property returns a "raw" client that can be used to acc
 from speechify import Speechify
 
 client = Speechify(...)
-response = client.tts.audio.with_raw_response.speech(...)
+response = client.audio.with_raw_response.speech(...)
 print(response.headers)  # access the response headers
 print(response.status_code)  # access the response status code
 print(response.data)  # access the underlying object
@@ -150,7 +150,7 @@ Which status codes are retried depends on the `retryStatusCodes` generator confi
 Use the `max_retries` request option to configure this behavior.
 
 ```python
-client.tts.audio.speech(..., request_options={
+client.audio.speech(..., request_options={
     "max_retries": 1
 })
 ```
@@ -165,7 +165,7 @@ from speechify import Speechify
 client = Speechify(..., timeout=20.0)
 
 # Override timeout for a specific method
-client.tts.audio.speech(..., request_options={
+client.audio.speech(..., request_options={
     "timeout_in_seconds": 1
 })
 ```

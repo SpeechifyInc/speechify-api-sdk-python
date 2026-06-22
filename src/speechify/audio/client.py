@@ -2,11 +2,11 @@
 
 import typing
 
-from ...core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
-from ...core.request_options import RequestOptions
-from ...types.get_speech_options_request import GetSpeechOptionsRequest
-from ...types.get_speech_response import GetSpeechResponse
-from ...types.get_stream_options_request import GetStreamOptionsRequest
+from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.request_options import RequestOptions
+from ..types.get_speech_options_request import GetSpeechOptionsRequest
+from ..types.get_speech_response import GetSpeechResponse
+from ..types.get_stream_options_request import GetStreamOptionsRequest
 from .raw_client import AsyncRawAudioClient, RawAudioClient
 from .types.get_speech_request_audio_format import GetSpeechRequestAudioFormat
 from .types.get_speech_request_model import GetSpeechRequestModel
@@ -83,9 +83,9 @@ class AudioClient:
         from speechify import Speechify
 
         client = Speechify(
-            token="YOUR_TOKEN",
+            api_key="YOUR_API_KEY",
         )
-        client.tts.audio.speech(
+        client.audio.speech(
             audio_format="mp3",
             input="Hello! This is the Speechify text-to-speech API.",
             model="simba-english",
@@ -154,9 +154,9 @@ class AudioClient:
         from speechify import Speechify
 
         client = Speechify(
-            token="YOUR_TOKEN",
+            api_key="YOUR_API_KEY",
         )
-        client.tts.audio.stream(
+        client.audio.stream(
             accept="audio/mpeg",
             input="input",
             voice_id="voice_id",
@@ -242,12 +242,12 @@ class AsyncAudioClient:
         from speechify import AsyncSpeechify
 
         client = AsyncSpeechify(
-            token="YOUR_TOKEN",
+            api_key="YOUR_API_KEY",
         )
 
 
         async def main() -> None:
-            await client.tts.audio.speech(
+            await client.audio.speech(
                 audio_format="mp3",
                 input="Hello! This is the Speechify text-to-speech API.",
                 model="simba-english",
@@ -321,12 +321,12 @@ class AsyncAudioClient:
         from speechify import AsyncSpeechify
 
         client = AsyncSpeechify(
-            token="YOUR_TOKEN",
+            api_key="YOUR_API_KEY",
         )
 
 
         async def main() -> None:
-            await client.tts.audio.stream(
+            await client.audio.stream(
                 accept="audio/mpeg",
                 input="input",
                 voice_id="voice_id",

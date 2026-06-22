@@ -41,11 +41,18 @@ if typing.TYPE_CHECKING:
         UnauthorizedError,
         UnprocessableEntityError,
     )
-    from . import tts
+    from . import audio, voices
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
+    from .audio import (
+        GetSpeechRequestAudioFormat,
+        GetSpeechRequestModel,
+        GetStreamRequestModel,
+        StreamAudioRequestAccept,
+    )
     from .client import AsyncSpeechify, Speechify
     from .environment import SpeechifyEnvironment
     from .version import __version__
+    from .voices import CreateVoicesRequestGender
 _dynamic_imports: typing.Dict[str, str] = {
     "AsyncSpeechify": ".client",
     "BadGatewayError": ".errors",
@@ -53,6 +60,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "CreateVoiceLanguage": ".types",
     "CreateVoiceModel": ".types",
     "CreateVoiceModelName": ".types",
+    "CreateVoicesRequestGender": ".voices",
     "CreatedVoice": ".types",
     "CreatedVoiceGender": ".types",
     "CreatedVoiceType": ".types",
@@ -63,9 +71,12 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ErrorDetail": ".types",
     "ForbiddenError": ".errors",
     "GetSpeechOptionsRequest": ".types",
+    "GetSpeechRequestAudioFormat": ".audio",
+    "GetSpeechRequestModel": ".audio",
     "GetSpeechResponse": ".types",
     "GetSpeechResponseAudioFormat": ".types",
     "GetStreamOptionsRequest": ".types",
+    "GetStreamRequestModel": ".audio",
     "GetVoice": ".types",
     "GetVoiceGender": ".types",
     "GetVoiceLanguage": ".types",
@@ -80,11 +91,13 @@ _dynamic_imports: typing.Dict[str, str] = {
     "SpeechMarks": ".types",
     "Speechify": ".client",
     "SpeechifyEnvironment": ".environment",
+    "StreamAudioRequestAccept": ".audio",
     "TooManyRequestsError": ".errors",
     "UnauthorizedError": ".errors",
     "UnprocessableEntityError": ".errors",
     "__version__": ".version",
-    "tts": ".tts",
+    "audio": ".audio",
+    "voices": ".voices",
 }
 
 
@@ -116,6 +129,7 @@ __all__ = [
     "CreateVoiceLanguage",
     "CreateVoiceModel",
     "CreateVoiceModelName",
+    "CreateVoicesRequestGender",
     "CreatedVoice",
     "CreatedVoiceGender",
     "CreatedVoiceType",
@@ -126,9 +140,12 @@ __all__ = [
     "ErrorDetail",
     "ForbiddenError",
     "GetSpeechOptionsRequest",
+    "GetSpeechRequestAudioFormat",
+    "GetSpeechRequestModel",
     "GetSpeechResponse",
     "GetSpeechResponseAudioFormat",
     "GetStreamOptionsRequest",
+    "GetStreamRequestModel",
     "GetVoice",
     "GetVoiceGender",
     "GetVoiceLanguage",
@@ -143,9 +160,11 @@ __all__ = [
     "SpeechMarks",
     "Speechify",
     "SpeechifyEnvironment",
+    "StreamAudioRequestAccept",
     "TooManyRequestsError",
     "UnauthorizedError",
     "UnprocessableEntityError",
     "__version__",
-    "tts",
+    "audio",
+    "voices",
 ]

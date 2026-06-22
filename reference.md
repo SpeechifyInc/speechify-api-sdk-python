@@ -1,6 +1,6 @@
 # Reference
-## Tts Audio
-<details><summary><code>client.tts.audio.<a href="src/speechify/tts/audio/client.py">speech</a>(...) -> GetSpeechResponse</code></summary>
+## audio
+<details><summary><code>client.audio.<a href="src/speechify/audio/client.py">speech</a>(...) -> GetSpeechResponse</code></summary>
 <dl>
 <dd>
 
@@ -33,11 +33,11 @@ from speechify import Speechify
 from speechify.environment import SpeechifyEnvironment
 
 client = Speechify(
-    token="<token>",
+    api_key="<token>",
     environment=SpeechifyEnvironment.DEFAULT,
 )
 
-client.tts.audio.speech(
+client.audio.speech(
     audio_format="mp3",
     input="Hello! This is the Speechify text-to-speech API.",
     model="simba-english",
@@ -125,7 +125,7 @@ Please refer to the list of the supported languages and recommendations regardin
 </dl>
 </details>
 
-<details><summary><code>client.tts.audio.<a href="src/speechify/tts/audio/client.py">stream</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.audio.<a href="src/speechify/audio/client.py">stream</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -159,11 +159,11 @@ from speechify import Speechify
 from speechify.environment import SpeechifyEnvironment
 
 client = Speechify(
-    token="<token>",
+    api_key="<token>",
     environment=SpeechifyEnvironment.DEFAULT,
 )
 
-client.tts.audio.stream(
+client.audio.stream(
     accept="audio/mpeg",
     input="input",
     voice_id="voice_id",
@@ -250,8 +250,8 @@ Please refer to the list of the supported languages and recommendations regardin
 </dl>
 </details>
 
-## Tts Voices
-<details><summary><code>client.tts.voices.<a href="src/speechify/tts/voices/client.py">list</a>() -> typing.List[GetVoice]</code></summary>
+## voices
+<details><summary><code>client.voices.<a href="src/speechify/voices/client.py">list</a>() -> typing.List[GetVoice]</code></summary>
 <dl>
 <dd>
 
@@ -282,11 +282,11 @@ from speechify import Speechify
 from speechify.environment import SpeechifyEnvironment
 
 client = Speechify(
-    token="<token>",
+    api_key="<token>",
     environment=SpeechifyEnvironment.DEFAULT,
 )
 
-client.tts.voices.list()
+client.voices.list()
 
 ```
 </dd>
@@ -314,7 +314,7 @@ client.tts.voices.list()
 </dl>
 </details>
 
-<details><summary><code>client.tts.voices.<a href="src/speechify/tts/voices/client.py">create</a>(...) -> CreatedVoice</code></summary>
+<details><summary><code>client.voices.<a href="src/speechify/voices/client.py">create</a>(...) -> CreatedVoice</code></summary>
 <dl>
 <dd>
 
@@ -345,11 +345,11 @@ from speechify import Speechify
 from speechify.environment import SpeechifyEnvironment
 
 client = Speechify(
-    token="<token>",
+    api_key="<token>",
     environment=SpeechifyEnvironment.DEFAULT,
 )
 
-client.tts.voices.create(
+client.voices.create(
     sample="example_sample",
     avatar="example_avatar",
     name="name",
@@ -440,7 +440,7 @@ For example, `{"fullName": "John Doe", "email": "john@example.com"}`
 </dl>
 </details>
 
-<details><summary><code>client.tts.voices.<a href="src/speechify/tts/voices/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.voices.<a href="src/speechify/voices/client.py">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -471,11 +471,11 @@ from speechify import Speechify
 from speechify.environment import SpeechifyEnvironment
 
 client = Speechify(
-    token="<token>",
+    api_key="<token>",
     environment=SpeechifyEnvironment.DEFAULT,
 )
 
-client.tts.voices.delete(
+client.voices.delete(
     id="id",
 )
 
@@ -513,7 +513,7 @@ client.tts.voices.delete(
 </dl>
 </details>
 
-<details><summary><code>client.tts.voices.<a href="src/speechify/tts/voices/client.py">download_sample</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.voices.<a href="src/speechify/voices/client.py">download_sample</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -544,11 +544,11 @@ from speechify import Speechify
 from speechify.environment import SpeechifyEnvironment
 
 client = Speechify(
-    token="<token>",
+    api_key="<token>",
     environment=SpeechifyEnvironment.DEFAULT,
 )
 
-client.tts.voices.download_sample(
+client.voices.download_sample(
     id="id",
 )
 

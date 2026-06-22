@@ -2,11 +2,11 @@
 
 import typing
 
-from ... import core
-from ...core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
-from ...core.request_options import RequestOptions
-from ...types.created_voice import CreatedVoice
-from ...types.get_voice import GetVoice
+from .. import core
+from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.request_options import RequestOptions
+from ..types.created_voice import CreatedVoice
+from ..types.get_voice import GetVoice
 from .raw_client import AsyncRawVoicesClient, RawVoicesClient
 from .types.create_voices_request_gender import CreateVoicesRequestGender
 
@@ -48,9 +48,9 @@ class VoicesClient:
         from speechify import Speechify
 
         client = Speechify(
-            token="YOUR_TOKEN",
+            api_key="YOUR_API_KEY",
         )
-        client.tts.voices.list()
+        client.voices.list()
         """
         _response = self._raw_client.list(request_options=request_options)
         return _response.data
@@ -107,9 +107,9 @@ class VoicesClient:
         from speechify import Speechify
 
         client = Speechify(
-            token="YOUR_TOKEN",
+            api_key="YOUR_API_KEY",
         )
-        client.tts.voices.create(
+        client.voices.create(
             name="name",
             gender="male",
             consent="consent",
@@ -147,9 +147,9 @@ class VoicesClient:
         from speechify import Speechify
 
         client = Speechify(
-            token="YOUR_TOKEN",
+            api_key="YOUR_API_KEY",
         )
-        client.tts.voices.delete(
+        client.voices.delete(
             id="id",
         )
         """
@@ -180,9 +180,9 @@ class VoicesClient:
         from speechify import Speechify
 
         client = Speechify(
-            token="YOUR_TOKEN",
+            api_key="YOUR_API_KEY",
         )
-        client.tts.voices.download_sample(
+        client.voices.download_sample(
             id="id",
         )
         """
@@ -226,12 +226,12 @@ class AsyncVoicesClient:
         from speechify import AsyncSpeechify
 
         client = AsyncSpeechify(
-            token="YOUR_TOKEN",
+            api_key="YOUR_API_KEY",
         )
 
 
         async def main() -> None:
-            await client.tts.voices.list()
+            await client.voices.list()
 
 
         asyncio.run(main())
@@ -293,12 +293,12 @@ class AsyncVoicesClient:
         from speechify import AsyncSpeechify
 
         client = AsyncSpeechify(
-            token="YOUR_TOKEN",
+            api_key="YOUR_API_KEY",
         )
 
 
         async def main() -> None:
-            await client.tts.voices.create(
+            await client.voices.create(
                 name="name",
                 gender="male",
                 consent="consent",
@@ -341,12 +341,12 @@ class AsyncVoicesClient:
         from speechify import AsyncSpeechify
 
         client = AsyncSpeechify(
-            token="YOUR_TOKEN",
+            api_key="YOUR_API_KEY",
         )
 
 
         async def main() -> None:
-            await client.tts.voices.delete(
+            await client.voices.delete(
                 id="id",
             )
 
@@ -382,12 +382,12 @@ class AsyncVoicesClient:
         from speechify import AsyncSpeechify
 
         client = AsyncSpeechify(
-            token="YOUR_TOKEN",
+            api_key="YOUR_API_KEY",
         )
 
 
         async def main() -> None:
-            await client.tts.voices.download_sample(
+            await client.voices.download_sample(
                 id="id",
             )
 

@@ -4,190 +4,111 @@ import contextlib
 import typing
 from json.decoder import JSONDecodeError
 
-from ... import core
-from ...core.api_error import ApiError
-from ...core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
-from ...core.http_response import AsyncHttpResponse, HttpResponse
-from ...core.jsonable_encoder import encode_path_param
-from ...core.parse_error import ParsingError
-from ...core.pydantic_utilities import parse_obj_as
-from ...core.request_options import RequestOptions
-from ...errors.bad_gateway_error import BadGatewayError
-from ...errors.bad_request_error import BadRequestError
-from ...errors.forbidden_error import ForbiddenError
-from ...errors.internal_server_error import InternalServerError
-from ...errors.not_found_error import NotFoundError
-from ...errors.payment_required_error import PaymentRequiredError
-from ...errors.service_unavailable_error import ServiceUnavailableError
-from ...errors.too_many_requests_error import TooManyRequestsError
-from ...errors.unauthorized_error import UnauthorizedError
-from ...errors.unprocessable_entity_error import UnprocessableEntityError
-from ...types.created_voice import CreatedVoice
-from ...types.error import Error
-from ...types.get_voice import GetVoice
-from .types.create_voices_request_gender import CreateVoicesRequestGender
+from ..core.api_error import ApiError
+from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.http_response import AsyncHttpResponse, HttpResponse
+from ..core.parse_error import ParsingError
+from ..core.pydantic_utilities import parse_obj_as
+from ..core.request_options import RequestOptions
+from ..core.serialization import convert_and_respect_annotation_metadata
+from ..errors.bad_gateway_error import BadGatewayError
+from ..errors.bad_request_error import BadRequestError
+from ..errors.forbidden_error import ForbiddenError
+from ..errors.internal_server_error import InternalServerError
+from ..errors.not_found_error import NotFoundError
+from ..errors.payment_required_error import PaymentRequiredError
+from ..errors.service_unavailable_error import ServiceUnavailableError
+from ..errors.too_many_requests_error import TooManyRequestsError
+from ..errors.unauthorized_error import UnauthorizedError
+from ..types.error import Error
+from ..types.get_speech_options_request import GetSpeechOptionsRequest
+from ..types.get_speech_response import GetSpeechResponse
+from ..types.get_stream_options_request import GetStreamOptionsRequest
+from .types.get_speech_request_audio_format import GetSpeechRequestAudioFormat
+from .types.get_speech_request_model import GetSpeechRequestModel
+from .types.get_stream_request_model import GetStreamRequestModel
+from .types.stream_audio_request_accept import StreamAudioRequestAccept
 from pydantic import ValidationError
 
 # this is used as the default value for optional parameters
 OMIT = typing.cast(typing.Any, ...)
 
 
-class RawVoicesClient:
+class RawAudioClient:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    def list(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[typing.List[GetVoice]]:
-        """
-        Gets the list of voices available for the user
-
-        Parameters
-        ----------
-        request_options : typing.Optional[RequestOptions]
-            Request-specific configuration.
-
-        Returns
-        -------
-        HttpResponse[typing.List[GetVoice]]
-            A list of voices
-        """
-        _response = self._client_wrapper.httpx_client.request(
-            "v1/voices",
-            method="GET",
-            request_options=request_options,
-        )
-        try:
-            if 200 <= _response.status_code < 300:
-                _data = typing.cast(
-                    typing.List[GetVoice],
-                    parse_obj_as(
-                        type_=typing.List[GetVoice],  # type: ignore
-                        object_=_response.json(),
-                    ),
-                )
-                return HttpResponse(response=_response, data=_data)
-            if _response.status_code == 401:
-                raise UnauthorizedError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 403:
-                raise ForbiddenError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        Error,
-                        parse_obj_as(
-                            type_=Error,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 429:
-                raise TooManyRequestsError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        Error,
-                        parse_obj_as(
-                            type_=Error,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 500:
-                raise InternalServerError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        Error,
-                        parse_obj_as(
-                            type_=Error,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            _response_json = _response.json()
-        except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
-        except ValidationError as e:
-            raise ParsingError(
-                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
-            )
-        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
-
-    def create(
+    def speech(
         self,
         *,
-        name: str,
-        gender: CreateVoicesRequestGender,
-        sample: core.File,
-        consent: str,
-        locale: typing.Optional[str] = OMIT,
-        avatar: typing.Optional[core.File] = OMIT,
+        input: str,
+        voice_id: str,
+        audio_format: typing.Optional[GetSpeechRequestAudioFormat] = OMIT,
+        language: typing.Optional[str] = OMIT,
+        model: typing.Optional[GetSpeechRequestModel] = OMIT,
+        options: typing.Optional[GetSpeechOptionsRequest] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[CreatedVoice]:
+    ) -> HttpResponse[GetSpeechResponse]:
         """
-        Create a personal (cloned) voice for the user
+        Synthesize speech audio from text or SSML. Returns the complete audio
+        file plus billing and speech-mark metadata in a single response. For
+        low-latency playback or long-form text, use POST /v1/audio/stream.
 
         Parameters
         ----------
-        name : str
-            Name of the personal voice
+        input : str
+            Plain text or SSML to be synthesized to speech.
+            Refer to https://docs.speechify.ai/docs/api-limits for the input size limits.
+            Emotion, Pitch and Speed Rate are configured in the ssml input, please refer to the ssml documentation for more information: https://docs.speechify.ai/docs/ssml#prosody
 
-        gender : CreateVoicesRequestGender
-            Gender marker for the personal voice
-            male GenderMale
-            female GenderFemale
-            notSpecified GenderNotSpecified
+        voice_id : str
+            Id of the voice to be used for synthesizing speech. Refer to /v1/voices endpoint for available voices
 
-        sample : core.File
-            See core.File for more documentation
+        audio_format : typing.Optional[GetSpeechRequestAudioFormat]
+            The format for the output audio. Note, that the current default is "wav", but there's no guarantee it will not change in the future. We recommend always passing the specific param you expect.
 
-        consent : str
-            A **string** representing the user consent information in JSON format
-            This should include the fullName and email of the consenting individual.
-            For example, `{"fullName": "John Doe", "email": "john@example.com"}`
+        language : typing.Optional[str]
+            Language of the input. Follow the format of an ISO 639-1 language code and an ISO 3166-1 region code, separated by a hyphen, e.g. en-US.
+            Please refer to the list of the supported languages and recommendations regarding this parameter: https://docs.speechify.ai/docs/language-support.
 
-        locale : typing.Optional[str]
-            Native language (locale) of the personal voice (e.g. en-US, es-ES, etc.)
+        model : typing.Optional[GetSpeechRequestModel]
+            Model used for audio synthesis. `simba-english` is optimized for English, `simba-multilingual` for non-English or mixed input. `simba-3.0` is the streaming-native model with lower TTFB and richer expressivity. Currently English only; multilingual coming soon. Non-English voices return 400 until multilingual support ships.
 
-        avatar : typing.Optional[core.File]
-            See core.File for more documentation
+        options : typing.Optional[GetSpeechOptionsRequest]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        HttpResponse[CreatedVoice]
-            A created voice
+        HttpResponse[GetSpeechResponse]
+            Synthesized speech audio for the requested input.
         """
         _response = self._client_wrapper.httpx_client.request(
-            "v1/voices",
+            "v1/audio/speech",
             method="POST",
-            data={
-                "name": name,
-                "locale": locale,
-                "gender": gender,
-                "consent": consent,
+            json={
+                "audio_format": audio_format,
+                "input": input,
+                "language": language,
+                "model": model,
+                "options": convert_and_respect_annotation_metadata(
+                    object_=options, annotation=GetSpeechOptionsRequest, direction="write"
+                ),
+                "voice_id": voice_id,
             },
-            files={
-                "sample": sample,
-                **({"avatar": avatar} if avatar is not None else {}),
+            headers={
+                "content-type": "application/json",
             },
             request_options=request_options,
             omit=OMIT,
-            force_multipart=True,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CreatedVoice,
+                    GetSpeechResponse,
                     parse_obj_as(
-                        type_=CreatedVoice,  # type: ignore
+                        type_=GetSpeechResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -221,127 +142,6 @@ class RawVoicesClient:
                         Error,
                         parse_obj_as(
                             type_=Error,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 403:
-                raise ForbiddenError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        Error,
-                        parse_obj_as(
-                            type_=Error,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 422:
-                raise UnprocessableEntityError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        Error,
-                        parse_obj_as(
-                            type_=Error,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 429:
-                raise TooManyRequestsError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        Error,
-                        parse_obj_as(
-                            type_=Error,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 500:
-                raise InternalServerError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        Error,
-                        parse_obj_as(
-                            type_=Error,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 502:
-                raise BadGatewayError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        Error,
-                        parse_obj_as(
-                            type_=Error,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 503:
-                raise ServiceUnavailableError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        Error,
-                        parse_obj_as(
-                            type_=Error,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            _response_json = _response.json()
-        except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
-        except ValidationError as e:
-            raise ParsingError(
-                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
-            )
-        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
-
-    def delete(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
-        """
-        Delete a personal (cloned) voice
-
-        Parameters
-        ----------
-        id : str
-            The ID of the voice to delete
-
-        request_options : typing.Optional[RequestOptions]
-            Request-specific configuration.
-
-        Returns
-        -------
-        HttpResponse[None]
-        """
-        _response = self._client_wrapper.httpx_client.request(
-            f"v1/voices/{encode_path_param(id)}",
-            method="DELETE",
-            request_options=request_options,
-        )
-        try:
-            if 200 <= _response.status_code < 300:
-                return HttpResponse(response=_response, data=None)
-            if _response.status_code == 400:
-                raise BadRequestError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 401:
-                raise UnauthorizedError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -422,16 +222,43 @@ class RawVoicesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     @contextlib.contextmanager
-    def download_sample(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
+    def stream(
+        self,
+        *,
+        accept: StreamAudioRequestAccept,
+        input: str,
+        voice_id: str,
+        language: typing.Optional[str] = OMIT,
+        model: typing.Optional[GetStreamRequestModel] = OMIT,
+        options: typing.Optional[GetStreamOptionsRequest] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> typing.Iterator[HttpResponse[typing.Iterator[bytes]]]:
         """
-        Download a personal (cloned) voice sample
+        Synthesize speech and stream the audio back as it is generated, for
+        low-latency playback. The Accept header selects the audio container.
+        For short text where receiving the whole file at once is fine, use
+        POST /v1/audio/speech.
 
         Parameters
         ----------
-        id : str
-            The ID of the voice to download sample for
+        accept : StreamAudioRequestAccept
+
+        input : str
+            Plain text or SSML to be synthesized to speech.
+            Refer to https://docs.speechify.ai/docs/api-limits for the input size limits.
+            Emotion, Pitch and Speed Rate are configured in the ssml input, please refer to the ssml documentation for more information: https://docs.speechify.ai/docs/ssml#prosody
+
+        voice_id : str
+            Id of the voice to be used for synthesizing speech. Refer to /v1/voices endpoint for available voices
+
+        language : typing.Optional[str]
+            Language of the input. Follow the format of an ISO 639-1 language code and an ISO 3166-1 region code, separated by a hyphen, e.g. en-US.
+            Please refer to the list of the supported languages and recommendations regarding this parameter: https://docs.speechify.ai/docs/language-support.
+
+        model : typing.Optional[GetStreamRequestModel]
+            Model used for audio synthesis. `simba-english` is optimized for English, `simba-multilingual` for non-English or mixed input. `simba-3.0` is the streaming-native model with lower TTFB and richer expressivity. Currently English only; multilingual coming soon. Non-English voices return 400 until multilingual support ships.
+
+        options : typing.Optional[GetStreamOptionsRequest]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response.
@@ -439,12 +266,26 @@ class RawVoicesClient:
         Returns
         -------
         typing.Iterator[HttpResponse[typing.Iterator[bytes]]]
-            Voice sample audio file
+            Chunked audio stream for the requested input.
         """
         with self._client_wrapper.httpx_client.stream(
-            f"v1/voices/{encode_path_param(id)}/sample",
-            method="GET",
+            "v1/audio/stream",
+            method="POST",
+            json={
+                "input": input,
+                "language": language,
+                "model": model,
+                "options": convert_and_respect_annotation_metadata(
+                    object_=options, annotation=GetStreamOptionsRequest, direction="write"
+                ),
+                "voice_id": voice_id,
+            },
+            headers={
+                "content-type": "application/json",
+                "Accept": str(accept) if accept is not None else None,
+            },
             request_options=request_options,
+            omit=OMIT,
         ) as _response:
 
             def _stream() -> HttpResponse[typing.Iterator[bytes]]:
@@ -473,6 +314,17 @@ class RawVoicesClient:
                                 typing.Any,
                                 parse_obj_as(
                                     type_=typing.Any,  # type: ignore
+                                    object_=_response.json(),
+                                ),
+                            ),
+                        )
+                    if _response.status_code == 402:
+                        raise PaymentRequiredError(
+                            headers=dict(_response.headers),
+                            body=typing.cast(
+                                Error,
+                                parse_obj_as(
+                                    type_=Error,  # type: ignore
                                     object_=_response.json(),
                                 ),
                             ),
@@ -560,164 +412,81 @@ class RawVoicesClient:
             yield _stream()
 
 
-class AsyncRawVoicesClient:
+class AsyncRawAudioClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    async def list(
-        self, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[typing.List[GetVoice]]:
-        """
-        Gets the list of voices available for the user
-
-        Parameters
-        ----------
-        request_options : typing.Optional[RequestOptions]
-            Request-specific configuration.
-
-        Returns
-        -------
-        AsyncHttpResponse[typing.List[GetVoice]]
-            A list of voices
-        """
-        _response = await self._client_wrapper.httpx_client.request(
-            "v1/voices",
-            method="GET",
-            request_options=request_options,
-        )
-        try:
-            if 200 <= _response.status_code < 300:
-                _data = typing.cast(
-                    typing.List[GetVoice],
-                    parse_obj_as(
-                        type_=typing.List[GetVoice],  # type: ignore
-                        object_=_response.json(),
-                    ),
-                )
-                return AsyncHttpResponse(response=_response, data=_data)
-            if _response.status_code == 401:
-                raise UnauthorizedError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 403:
-                raise ForbiddenError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        Error,
-                        parse_obj_as(
-                            type_=Error,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 429:
-                raise TooManyRequestsError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        Error,
-                        parse_obj_as(
-                            type_=Error,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 500:
-                raise InternalServerError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        Error,
-                        parse_obj_as(
-                            type_=Error,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            _response_json = _response.json()
-        except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
-        except ValidationError as e:
-            raise ParsingError(
-                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
-            )
-        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
-
-    async def create(
+    async def speech(
         self,
         *,
-        name: str,
-        gender: CreateVoicesRequestGender,
-        sample: core.File,
-        consent: str,
-        locale: typing.Optional[str] = OMIT,
-        avatar: typing.Optional[core.File] = OMIT,
+        input: str,
+        voice_id: str,
+        audio_format: typing.Optional[GetSpeechRequestAudioFormat] = OMIT,
+        language: typing.Optional[str] = OMIT,
+        model: typing.Optional[GetSpeechRequestModel] = OMIT,
+        options: typing.Optional[GetSpeechOptionsRequest] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[CreatedVoice]:
+    ) -> AsyncHttpResponse[GetSpeechResponse]:
         """
-        Create a personal (cloned) voice for the user
+        Synthesize speech audio from text or SSML. Returns the complete audio
+        file plus billing and speech-mark metadata in a single response. For
+        low-latency playback or long-form text, use POST /v1/audio/stream.
 
         Parameters
         ----------
-        name : str
-            Name of the personal voice
+        input : str
+            Plain text or SSML to be synthesized to speech.
+            Refer to https://docs.speechify.ai/docs/api-limits for the input size limits.
+            Emotion, Pitch and Speed Rate are configured in the ssml input, please refer to the ssml documentation for more information: https://docs.speechify.ai/docs/ssml#prosody
 
-        gender : CreateVoicesRequestGender
-            Gender marker for the personal voice
-            male GenderMale
-            female GenderFemale
-            notSpecified GenderNotSpecified
+        voice_id : str
+            Id of the voice to be used for synthesizing speech. Refer to /v1/voices endpoint for available voices
 
-        sample : core.File
-            See core.File for more documentation
+        audio_format : typing.Optional[GetSpeechRequestAudioFormat]
+            The format for the output audio. Note, that the current default is "wav", but there's no guarantee it will not change in the future. We recommend always passing the specific param you expect.
 
-        consent : str
-            A **string** representing the user consent information in JSON format
-            This should include the fullName and email of the consenting individual.
-            For example, `{"fullName": "John Doe", "email": "john@example.com"}`
+        language : typing.Optional[str]
+            Language of the input. Follow the format of an ISO 639-1 language code and an ISO 3166-1 region code, separated by a hyphen, e.g. en-US.
+            Please refer to the list of the supported languages and recommendations regarding this parameter: https://docs.speechify.ai/docs/language-support.
 
-        locale : typing.Optional[str]
-            Native language (locale) of the personal voice (e.g. en-US, es-ES, etc.)
+        model : typing.Optional[GetSpeechRequestModel]
+            Model used for audio synthesis. `simba-english` is optimized for English, `simba-multilingual` for non-English or mixed input. `simba-3.0` is the streaming-native model with lower TTFB and richer expressivity. Currently English only; multilingual coming soon. Non-English voices return 400 until multilingual support ships.
 
-        avatar : typing.Optional[core.File]
-            See core.File for more documentation
+        options : typing.Optional[GetSpeechOptionsRequest]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        AsyncHttpResponse[CreatedVoice]
-            A created voice
+        AsyncHttpResponse[GetSpeechResponse]
+            Synthesized speech audio for the requested input.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            "v1/voices",
+            "v1/audio/speech",
             method="POST",
-            data={
-                "name": name,
-                "locale": locale,
-                "gender": gender,
-                "consent": consent,
+            json={
+                "audio_format": audio_format,
+                "input": input,
+                "language": language,
+                "model": model,
+                "options": convert_and_respect_annotation_metadata(
+                    object_=options, annotation=GetSpeechOptionsRequest, direction="write"
+                ),
+                "voice_id": voice_id,
             },
-            files={
-                "sample": sample,
-                **({"avatar": avatar} if avatar is not None else {}),
+            headers={
+                "content-type": "application/json",
             },
             request_options=request_options,
             omit=OMIT,
-            force_multipart=True,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CreatedVoice,
+                    GetSpeechResponse,
                     parse_obj_as(
-                        type_=CreatedVoice,  # type: ignore
+                        type_=GetSpeechResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -751,129 +520,6 @@ class AsyncRawVoicesClient:
                         Error,
                         parse_obj_as(
                             type_=Error,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 403:
-                raise ForbiddenError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        Error,
-                        parse_obj_as(
-                            type_=Error,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 422:
-                raise UnprocessableEntityError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        Error,
-                        parse_obj_as(
-                            type_=Error,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 429:
-                raise TooManyRequestsError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        Error,
-                        parse_obj_as(
-                            type_=Error,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 500:
-                raise InternalServerError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        Error,
-                        parse_obj_as(
-                            type_=Error,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 502:
-                raise BadGatewayError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        Error,
-                        parse_obj_as(
-                            type_=Error,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 503:
-                raise ServiceUnavailableError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        Error,
-                        parse_obj_as(
-                            type_=Error,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            _response_json = _response.json()
-        except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
-        except ValidationError as e:
-            raise ParsingError(
-                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
-            )
-        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
-
-    async def delete(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[None]:
-        """
-        Delete a personal (cloned) voice
-
-        Parameters
-        ----------
-        id : str
-            The ID of the voice to delete
-
-        request_options : typing.Optional[RequestOptions]
-            Request-specific configuration.
-
-        Returns
-        -------
-        AsyncHttpResponse[None]
-        """
-        _response = await self._client_wrapper.httpx_client.request(
-            f"v1/voices/{encode_path_param(id)}",
-            method="DELETE",
-            request_options=request_options,
-        )
-        try:
-            if 200 <= _response.status_code < 300:
-                return AsyncHttpResponse(response=_response, data=None)
-            if _response.status_code == 400:
-                raise BadRequestError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 401:
-                raise UnauthorizedError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -954,16 +600,43 @@ class AsyncRawVoicesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     @contextlib.asynccontextmanager
-    async def download_sample(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
+    async def stream(
+        self,
+        *,
+        accept: StreamAudioRequestAccept,
+        input: str,
+        voice_id: str,
+        language: typing.Optional[str] = OMIT,
+        model: typing.Optional[GetStreamRequestModel] = OMIT,
+        options: typing.Optional[GetStreamOptionsRequest] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> typing.AsyncIterator[AsyncHttpResponse[typing.AsyncIterator[bytes]]]:
         """
-        Download a personal (cloned) voice sample
+        Synthesize speech and stream the audio back as it is generated, for
+        low-latency playback. The Accept header selects the audio container.
+        For short text where receiving the whole file at once is fine, use
+        POST /v1/audio/speech.
 
         Parameters
         ----------
-        id : str
-            The ID of the voice to download sample for
+        accept : StreamAudioRequestAccept
+
+        input : str
+            Plain text or SSML to be synthesized to speech.
+            Refer to https://docs.speechify.ai/docs/api-limits for the input size limits.
+            Emotion, Pitch and Speed Rate are configured in the ssml input, please refer to the ssml documentation for more information: https://docs.speechify.ai/docs/ssml#prosody
+
+        voice_id : str
+            Id of the voice to be used for synthesizing speech. Refer to /v1/voices endpoint for available voices
+
+        language : typing.Optional[str]
+            Language of the input. Follow the format of an ISO 639-1 language code and an ISO 3166-1 region code, separated by a hyphen, e.g. en-US.
+            Please refer to the list of the supported languages and recommendations regarding this parameter: https://docs.speechify.ai/docs/language-support.
+
+        model : typing.Optional[GetStreamRequestModel]
+            Model used for audio synthesis. `simba-english` is optimized for English, `simba-multilingual` for non-English or mixed input. `simba-3.0` is the streaming-native model with lower TTFB and richer expressivity. Currently English only; multilingual coming soon. Non-English voices return 400 until multilingual support ships.
+
+        options : typing.Optional[GetStreamOptionsRequest]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response.
@@ -971,12 +644,26 @@ class AsyncRawVoicesClient:
         Returns
         -------
         typing.AsyncIterator[AsyncHttpResponse[typing.AsyncIterator[bytes]]]
-            Voice sample audio file
+            Chunked audio stream for the requested input.
         """
         async with self._client_wrapper.httpx_client.stream(
-            f"v1/voices/{encode_path_param(id)}/sample",
-            method="GET",
+            "v1/audio/stream",
+            method="POST",
+            json={
+                "input": input,
+                "language": language,
+                "model": model,
+                "options": convert_and_respect_annotation_metadata(
+                    object_=options, annotation=GetStreamOptionsRequest, direction="write"
+                ),
+                "voice_id": voice_id,
+            },
+            headers={
+                "content-type": "application/json",
+                "Accept": str(accept) if accept is not None else None,
+            },
             request_options=request_options,
+            omit=OMIT,
         ) as _response:
 
             async def _stream() -> AsyncHttpResponse[typing.AsyncIterator[bytes]]:
@@ -1006,6 +693,17 @@ class AsyncRawVoicesClient:
                                 typing.Any,
                                 parse_obj_as(
                                     type_=typing.Any,  # type: ignore
+                                    object_=_response.json(),
+                                ),
+                            ),
+                        )
+                    if _response.status_code == 402:
+                        raise PaymentRequiredError(
+                            headers=dict(_response.headers),
+                            body=typing.cast(
+                                Error,
+                                parse_obj_as(
+                                    type_=Error,  # type: ignore
                                     object_=_response.json(),
                                 ),
                             ),

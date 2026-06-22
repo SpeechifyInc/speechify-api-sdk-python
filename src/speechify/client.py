@@ -12,7 +12,8 @@ from .core.logging import LogConfig, Logger
 from .environment import SpeechifyEnvironment
 
 if typing.TYPE_CHECKING:
-    from .tts.client import AsyncTtsClient, TtsClient
+    from .audio.client import AsyncAudioClient, AudioClient
+    from .voices.client import AsyncVoicesClient, VoicesClient
 
 
 class Speechify:
@@ -33,7 +34,7 @@ class Speechify:
 
 
 
-    token : typing.Optional[typing.Union[str, typing.Callable[[], str]]]
+    api_key : typing.Optional[typing.Union[str, typing.Callable[[], str]]]
     headers : typing.Optional[typing.Dict[str, str]]
         Additional headers to send with every request.
 
@@ -57,7 +58,7 @@ class Speechify:
     from speechify import Speechify
 
     client = Speechify(
-        token="YOUR_TOKEN",
+        api_key="YOUR_API_KEY",
     )
     """
 
@@ -66,7 +67,7 @@ class Speechify:
         *,
         base_url: typing.Optional[str] = None,
         environment: SpeechifyEnvironment = SpeechifyEnvironment.DEFAULT,
-        token: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = os.getenv("SPEECHIFY_API_KEY"),
+        api_key: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = os.getenv("SPEECHIFY_API_KEY"),
         headers: typing.Optional[typing.Dict[str, str]] = None,
         timeout: typing.Optional[float] = None,
         max_retries: typing.Optional[int] = None,
@@ -78,13 +79,13 @@ class Speechify:
             timeout if timeout is not None else 60 if httpx_client is None else httpx_client.timeout.read
         )
         _defaulted_max_retries = max_retries if max_retries is not None else 2
-        if token is None:
+        if api_key is None:
             raise ApiError(
-                body="The client must be instantiated be either passing in token or setting SPEECHIFY_API_KEY"
+                body="The client must be instantiated be either passing in api_key or setting SPEECHIFY_API_KEY"
             )
         self._client_wrapper = SyncClientWrapper(
             base_url=_get_base_url(base_url=base_url, environment=environment),
-            token=token,
+            api_key=api_key,
             headers=headers,
             httpx_client=httpx_client
             if httpx_client is not None
@@ -95,15 +96,24 @@ class Speechify:
             max_retries=_defaulted_max_retries,
             logging=logging,
         )
-        self._tts: typing.Optional[TtsClient] = None
+        self._audio: typing.Optional[AudioClient] = None
+        self._voices: typing.Optional[VoicesClient] = None
 
     @property
-    def tts(self):
-        if self._tts is None:
-            from .tts.client import TtsClient  # noqa: E402
+    def audio(self):
+        if self._audio is None:
+            from .audio.client import AudioClient  # noqa: E402
 
-            self._tts = TtsClient(client_wrapper=self._client_wrapper)
-        return self._tts
+            self._audio = AudioClient(client_wrapper=self._client_wrapper)
+        return self._audio
+
+    @property
+    def voices(self):
+        if self._voices is None:
+            from .voices.client import VoicesClient  # noqa: E402
+
+            self._voices = VoicesClient(client_wrapper=self._client_wrapper)
+        return self._voices
 
 
 def _make_default_async_client(
@@ -142,7 +152,7 @@ class AsyncSpeechify:
 
 
 
-    token : typing.Optional[typing.Union[str, typing.Callable[[], str]]]
+    api_key : typing.Optional[typing.Union[str, typing.Callable[[], str]]]
     headers : typing.Optional[typing.Dict[str, str]]
         Additional headers to send with every request.
 
@@ -169,7 +179,7 @@ class AsyncSpeechify:
     from speechify import AsyncSpeechify
 
     client = AsyncSpeechify(
-        token="YOUR_TOKEN",
+        api_key="YOUR_API_KEY",
     )
     """
 
@@ -178,7 +188,7 @@ class AsyncSpeechify:
         *,
         base_url: typing.Optional[str] = None,
         environment: SpeechifyEnvironment = SpeechifyEnvironment.DEFAULT,
-        token: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = os.getenv("SPEECHIFY_API_KEY"),
+        api_key: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = os.getenv("SPEECHIFY_API_KEY"),
         headers: typing.Optional[typing.Dict[str, str]] = None,
         async_token: typing.Optional[typing.Callable[[], typing.Awaitable[str]]] = None,
         timeout: typing.Optional[float] = None,
@@ -191,13 +201,13 @@ class AsyncSpeechify:
             timeout if timeout is not None else 60 if httpx_client is None else httpx_client.timeout.read
         )
         _defaulted_max_retries = max_retries if max_retries is not None else 2
-        if token is None:
+        if api_key is None:
             raise ApiError(
-                body="The client must be instantiated be either passing in token or setting SPEECHIFY_API_KEY"
+                body="The client must be instantiated be either passing in api_key or setting SPEECHIFY_API_KEY"
             )
         self._client_wrapper = AsyncClientWrapper(
             base_url=_get_base_url(base_url=base_url, environment=environment),
-            token=token,
+            api_key=api_key,
             headers=headers,
             async_token=async_token,
             httpx_client=httpx_client
@@ -207,15 +217,24 @@ class AsyncSpeechify:
             max_retries=_defaulted_max_retries,
             logging=logging,
         )
-        self._tts: typing.Optional[AsyncTtsClient] = None
+        self._audio: typing.Optional[AsyncAudioClient] = None
+        self._voices: typing.Optional[AsyncVoicesClient] = None
 
     @property
-    def tts(self):
-        if self._tts is None:
-            from .tts.client import AsyncTtsClient  # noqa: E402
+    def audio(self):
+        if self._audio is None:
+            from .audio.client import AsyncAudioClient  # noqa: E402
 
-            self._tts = AsyncTtsClient(client_wrapper=self._client_wrapper)
-        return self._tts
+            self._audio = AsyncAudioClient(client_wrapper=self._client_wrapper)
+        return self._audio
+
+    @property
+    def voices(self):
+        if self._voices is None:
+            from .voices.client import AsyncVoicesClient  # noqa: E402
+
+            self._voices = AsyncVoicesClient(client_wrapper=self._client_wrapper)
+        return self._voices
 
 
 def _get_base_url(*, base_url: typing.Optional[str] = None, environment: SpeechifyEnvironment) -> str:
