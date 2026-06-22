@@ -11,9 +11,11 @@ The Speechifyinc Python library provides convenient access to the Speechifyinc A
 - [Installation](#installation)
 - [Reference](#reference)
 - [Usage](#usage)
+- [Environments](#environments)
 - [Async Client](#async-client)
 - [Exception Handling](#exception-handling)
 - [Advanced](#advanced)
+  - [Access Raw Response Data](#access-raw-response-data)
   - [Retries](#retries)
   - [Timeouts](#timeouts)
   - [Custom Client](#custom-client)
@@ -41,17 +43,33 @@ Instantiate and use the client with the following:
 from speechify import Speechify
 
 client = Speechify(
-    token="YOUR_TOKEN",
+    api_key="<token>",
 )
-client.tts.audio.speech(
-    input="input",
-    voice_id="voice_id",
+
+client.audio.speech(
+    audio_format="mp3",
+    input="Hello! This is the Speechify text-to-speech API.",
+    model="simba-english",
+    voice_id="george",
+)
+```
+
+## Environments
+
+This SDK allows you to configure different environments for API requests.
+
+```python
+from speechify import Speechify
+from speechify.environment import SpeechifyEnvironment
+
+client = Speechify(
+    environment=SpeechifyEnvironment.DEFAULT,
 )
 ```
 
 ## Async Client
 
-The SDK also exports an `async` client so that you can make non-blocking calls to our API.
+The SDK also exports an `async` client so that you can make non-blocking calls to our API. Note that if you are constructing an Async httpx client class to pass into this client, use `httpx.AsyncClient()` instead of `httpx.Client()` (e.g. for the `httpx_client` parameter of this client).
 
 ```python
 import asyncio
@@ -59,14 +77,16 @@ import asyncio
 from speechify import AsyncSpeechify
 
 client = AsyncSpeechify(
-    token="YOUR_TOKEN",
+    api_key="<token>",
 )
 
 
 async def main() -> None:
-    await client.tts.audio.speech(
-        input="input",
-        voice_id="voice_id",
+    await client.audio.speech(
+        audio_format="mp3",
+        input="Hello! This is the Speechify text-to-speech API.",
+        model="simba-english",
+        voice_id="george",
     )
 
 
@@ -82,7 +102,7 @@ will be thrown.
 from speechify.core.api_error import ApiError
 
 try:
-    client.tts.audio.speech(...)
+    client.audio.speech(...)
 except ApiError as e:
     print(e.status_code)
     print(e.body)
@@ -90,22 +110,47 @@ except ApiError as e:
 
 ## Advanced
 
+### Access Raw Response Data
+
+The SDK provides access to raw response data, including headers, through the `.with_raw_response` property.
+The `.with_raw_response` property returns a "raw" client that can be used to access the `.headers` and `.data` attributes.
+
+```python
+from speechify import Speechify
+
+client = Speechify(...)
+response = client.audio.with_raw_response.speech(...)
+print(response.headers)  # access the response headers
+print(response.status_code)  # access the response status code
+print(response.data)  # access the underlying object
+```
+
 ### Retries
 
 The SDK is instrumented with automatic retries with exponential backoff. A request will be retried as long
 as the request is deemed retryable and the number of retry attempts has not grown larger than the configured
 retry limit (default: 2).
 
-A request is deemed retryable when any of the following HTTP status codes is returned:
+Which status codes are retried depends on the `retryStatusCodes` generator configuration:
 
+**`legacy`** (current default): retries on
 - [408](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/408) (Timeout)
+- [409](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/409) (Conflict)
 - [429](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429) (Too Many Requests)
-- [5XX](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500) (Internal Server Errors)
+- [5XX](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#server_error_responses) (All server errors, including 500)
+
+**`recommended`**: retries on
+- [408](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/408) (Timeout)
+- [409](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/409) (Conflict)
+- [429](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429) (Too Many Requests)
+- [502](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/502) (Bad Gateway)
+- [503](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503) (Service Unavailable)
+- [504](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/504) (Gateway Timeout)
 
 Use the `max_retries` request option to configure this behavior.
 
 ```python
-client.tts.audio.speech(..., request_options={
+client.audio.speech(..., request_options={
     "max_retries": 1
 })
 ```
@@ -115,17 +160,12 @@ client.tts.audio.speech(..., request_options={
 The SDK defaults to a 60 second timeout. You can configure this with a timeout option at the client or request level.
 
 ```python
-
 from speechify import Speechify
 
-client = Speechify(
-    ...,
-    timeout=20.0,
-)
-
+client = Speechify(..., timeout=20.0)
 
 # Override timeout for a specific method
-client.tts.audio.speech(..., request_options={
+client.audio.speech(..., request_options={
     "timeout_in_seconds": 1
 })
 ```
@@ -134,6 +174,7 @@ client.tts.audio.speech(..., request_options={
 
 You can override the `httpx` client to customize it for your use-case. Some common use-cases include support for proxies
 and transports.
+
 ```python
 import httpx
 from speechify import Speechify
@@ -141,7 +182,7 @@ from speechify import Speechify
 client = Speechify(
     ...,
     httpx_client=httpx.Client(
-        proxies="http://my.test.proxy.example.com",
+        proxy="http://my.test.proxy.example.com",
         transport=httpx.HTTPTransport(local_address="0.0.0.0"),
     ),
 )
