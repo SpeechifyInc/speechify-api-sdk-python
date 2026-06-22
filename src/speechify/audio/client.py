@@ -123,6 +123,10 @@ class AudioClient:
         Parameters
         ----------
         accept : StreamAudioRequestAccept
+            Selects the audio container/codec for the streamed response. The
+            response Content-Type echoes this value, except `audio/pcm` returns
+            `audio/L16` with rate and channels parameters (raw 16-bit linear
+            PCM, 24 kHz mono, little-endian).
 
         input : str
             Plain text or SSML to be synthesized to speech.
@@ -288,6 +292,10 @@ class AsyncAudioClient:
         Parameters
         ----------
         accept : StreamAudioRequestAccept
+            Selects the audio container/codec for the streamed response. The
+            response Content-Type echoes this value, except `audio/pcm` returns
+            `audio/L16` with rate and channels parameters (raw 16-bit linear
+            PCM, 24 kHz mono, little-endian).
 
         input : str
             Plain text or SSML to be synthesized to speech.
