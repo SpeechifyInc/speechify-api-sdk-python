@@ -83,7 +83,8 @@ class AudioClient:
         from speechify import Speechify
 
         client = Speechify(
-            api_key="YOUR_API_KEY",
+            "2026-06-28",
+            token="YOUR_TOKEN",
         )
         client.audio.speech(
             audio_format="mp3",
@@ -152,14 +153,17 @@ class AudioClient:
         Returns
         -------
         typing.Iterator[bytes]
-            Chunked audio stream for the requested input.
+            Streamed audio. The Content-Type matches the Accept header except
+            for `audio/pcm`, which returns `audio/L16` with rate and channels
+            parameters (see the Accept header description).
 
         Examples
         --------
         from speechify import Speechify
 
         client = Speechify(
-            api_key="YOUR_API_KEY",
+            "2026-06-28",
+            token="YOUR_TOKEN",
         )
         client.audio.stream(
             accept="audio/mpeg",
@@ -247,7 +251,8 @@ class AsyncAudioClient:
         from speechify import AsyncSpeechify
 
         client = AsyncSpeechify(
-            api_key="YOUR_API_KEY",
+            "2026-06-28",
+            token="YOUR_TOKEN",
         )
 
 
@@ -322,7 +327,9 @@ class AsyncAudioClient:
         Returns
         -------
         typing.AsyncIterator[bytes]
-            Chunked audio stream for the requested input.
+            Streamed audio. The Content-Type matches the Accept header except
+            for `audio/pcm`, which returns `audio/L16` with rate and channels
+            parameters (see the Accept header description).
 
         Examples
         --------
@@ -331,7 +338,8 @@ class AsyncAudioClient:
         from speechify import AsyncSpeechify
 
         client = AsyncSpeechify(
-            api_key="YOUR_API_KEY",
+            "2026-06-28",
+            token="YOUR_TOKEN",
         )
 
 

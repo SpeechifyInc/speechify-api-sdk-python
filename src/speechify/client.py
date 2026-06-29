@@ -34,7 +34,8 @@ class Speechify:
 
 
 
-    api_key : typing.Optional[typing.Union[str, typing.Callable[[], str]]]
+    version : typing.Optional[str]
+    token : typing.Optional[typing.Union[str, typing.Callable[[], str]]]
     headers : typing.Optional[typing.Dict[str, str]]
         Additional headers to send with every request.
 
@@ -58,7 +59,8 @@ class Speechify:
     from speechify import Speechify
 
     client = Speechify(
-        api_key="YOUR_API_KEY",
+        "2026-06-28",
+        token="YOUR_TOKEN",
     )
     """
 
@@ -67,7 +69,8 @@ class Speechify:
         *,
         base_url: typing.Optional[str] = None,
         environment: SpeechifyEnvironment = SpeechifyEnvironment.DEFAULT,
-        api_key: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = os.getenv("SPEECHIFY_API_KEY"),
+        version: typing.Optional[str] = "2026-06-28",
+        token: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = os.getenv("SPEECHIFY_API_KEY"),
         headers: typing.Optional[typing.Dict[str, str]] = None,
         timeout: typing.Optional[float] = None,
         max_retries: typing.Optional[int] = None,
@@ -79,13 +82,14 @@ class Speechify:
             timeout if timeout is not None else 60 if httpx_client is None else httpx_client.timeout.read
         )
         _defaulted_max_retries = max_retries if max_retries is not None else 2
-        if api_key is None:
+        if token is None:
             raise ApiError(
-                body="The client must be instantiated be either passing in api_key or setting SPEECHIFY_API_KEY"
+                body="The client must be instantiated be either passing in token or setting SPEECHIFY_API_KEY"
             )
         self._client_wrapper = SyncClientWrapper(
             base_url=_get_base_url(base_url=base_url, environment=environment),
-            api_key=api_key,
+            version=version,
+            token=token,
             headers=headers,
             httpx_client=httpx_client
             if httpx_client is not None
@@ -152,7 +156,8 @@ class AsyncSpeechify:
 
 
 
-    api_key : typing.Optional[typing.Union[str, typing.Callable[[], str]]]
+    version : typing.Optional[str]
+    token : typing.Optional[typing.Union[str, typing.Callable[[], str]]]
     headers : typing.Optional[typing.Dict[str, str]]
         Additional headers to send with every request.
 
@@ -179,7 +184,8 @@ class AsyncSpeechify:
     from speechify import AsyncSpeechify
 
     client = AsyncSpeechify(
-        api_key="YOUR_API_KEY",
+        "2026-06-28",
+        token="YOUR_TOKEN",
     )
     """
 
@@ -188,7 +194,8 @@ class AsyncSpeechify:
         *,
         base_url: typing.Optional[str] = None,
         environment: SpeechifyEnvironment = SpeechifyEnvironment.DEFAULT,
-        api_key: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = os.getenv("SPEECHIFY_API_KEY"),
+        version: typing.Optional[str] = "2026-06-28",
+        token: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = os.getenv("SPEECHIFY_API_KEY"),
         headers: typing.Optional[typing.Dict[str, str]] = None,
         async_token: typing.Optional[typing.Callable[[], typing.Awaitable[str]]] = None,
         timeout: typing.Optional[float] = None,
@@ -201,13 +208,14 @@ class AsyncSpeechify:
             timeout if timeout is not None else 60 if httpx_client is None else httpx_client.timeout.read
         )
         _defaulted_max_retries = max_retries if max_retries is not None else 2
-        if api_key is None:
+        if token is None:
             raise ApiError(
-                body="The client must be instantiated be either passing in api_key or setting SPEECHIFY_API_KEY"
+                body="The client must be instantiated be either passing in token or setting SPEECHIFY_API_KEY"
             )
         self._client_wrapper = AsyncClientWrapper(
             base_url=_get_base_url(base_url=base_url, environment=environment),
-            api_key=api_key,
+            version=version,
+            token=token,
             headers=headers,
             async_token=async_token,
             httpx_client=httpx_client

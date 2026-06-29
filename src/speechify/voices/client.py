@@ -4,9 +4,10 @@ import typing
 
 from .. import core
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.pagination import AsyncPager, SyncPager
 from ..core.request_options import RequestOptions
-from ..types.created_voice import CreatedVoice
 from ..types.get_voice import GetVoice
+from ..types.list_voices_response import ListVoicesResponse
 from .raw_client import AsyncRawVoicesClient, RawVoicesClient
 from .types.create_voices_request_gender import CreateVoicesRequestGender
 
@@ -29,31 +30,53 @@ class VoicesClient:
         """
         return self._raw_client
 
-    def list(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[GetVoice]:
+    def list(
+        self,
+        *,
+        cursor: typing.Optional[str] = None,
+        limit: typing.Optional[int] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> SyncPager[GetVoice, ListVoicesResponse]:
         """
-        Gets the list of voices available for the user
+        Lists the voices available to the caller - the shared voice
+        catalog plus the workspace's personal cloned voices. By default
+        the full catalogue is returned in one response. Pagination is
+        opt-in: pass `limit` (and then `cursor` from the previous
+        response) to page through the list while `has_more` is true. Max
+        page size is 200.
 
         Parameters
         ----------
+        cursor : typing.Optional[str]
+            Opaque pagination cursor from a previous response.
+
+        limit : typing.Optional[int]
+            Max items per page (default 50, max 200).
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        typing.List[GetVoice]
-            A list of voices
+        SyncPager[GetVoice, ListVoicesResponse]
+            The voice catalogue (or a page of it when `limit` is set).
 
         Examples
         --------
         from speechify import Speechify
 
         client = Speechify(
-            api_key="YOUR_API_KEY",
+            "2026-06-28",
+            token="YOUR_TOKEN",
         )
-        client.voices.list()
+        response = client.voices.list()
+        for item in response:
+            yield item
+        # alternatively, you can paginate page-by-page
+        for page in response.iter_pages():
+            yield page
         """
-        _response = self._raw_client.list(request_options=request_options)
-        return _response.data
+        return self._raw_client.list(cursor=cursor, limit=limit, request_options=request_options)
 
     def create(
         self,
@@ -65,7 +88,7 @@ class VoicesClient:
         locale: typing.Optional[str] = OMIT,
         avatar: typing.Optional[core.File] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> CreatedVoice:
+    ) -> GetVoice:
         """
         Create a personal (cloned) voice for the user
 
@@ -78,7 +101,7 @@ class VoicesClient:
             Gender marker for the personal voice
             male GenderMale
             female GenderFemale
-            notSpecified GenderNotSpecified
+            not_specified GenderNotSpecified
 
         sample : core.File
             See core.File for more documentation
@@ -99,7 +122,7 @@ class VoicesClient:
 
         Returns
         -------
-        CreatedVoice
+        GetVoice
             A created voice
 
         Examples
@@ -107,7 +130,8 @@ class VoicesClient:
         from speechify import Speechify
 
         client = Speechify(
-            api_key="YOUR_API_KEY",
+            "2026-06-28",
+            token="YOUR_TOKEN",
         )
         client.voices.create(
             name="name",
@@ -126,13 +150,48 @@ class VoicesClient:
         )
         return _response.data
 
-    def delete(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
+    def get(self, voice_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetVoice:
+        """
+        Fetch a single voice by id - a shared catalogue voice or one of
+        the caller's own personal (cloned) voices. A personal voice that
+        belongs to another workspace returns 404, identical to an
+        unknown id, so voice inventory is never enumerable across tenants.
+
+        Parameters
+        ----------
+        voice_id : str
+            The ID of the voice to fetch
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        GetVoice
+            The voice.
+
+        Examples
+        --------
+        from speechify import Speechify
+
+        client = Speechify(
+            "2026-06-28",
+            token="YOUR_TOKEN",
+        )
+        client.voices.get(
+            voice_id="voice_id",
+        )
+        """
+        _response = self._raw_client.get(voice_id, request_options=request_options)
+        return _response.data
+
+    def delete(self, voice_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Delete a personal (cloned) voice
 
         Parameters
         ----------
-        id : str
+        voice_id : str
             The ID of the voice to delete
 
         request_options : typing.Optional[RequestOptions]
@@ -147,24 +206,25 @@ class VoicesClient:
         from speechify import Speechify
 
         client = Speechify(
-            api_key="YOUR_API_KEY",
+            "2026-06-28",
+            token="YOUR_TOKEN",
         )
         client.voices.delete(
-            id="id",
+            voice_id="voice_id",
         )
         """
-        _response = self._raw_client.delete(id, request_options=request_options)
+        _response = self._raw_client.delete(voice_id, request_options=request_options)
         return _response.data
 
     def download_sample(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, voice_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> typing.Iterator[bytes]:
         """
         Download a personal (cloned) voice sample
 
         Parameters
         ----------
-        id : str
+        voice_id : str
             The ID of the voice to download sample for
 
         request_options : typing.Optional[RequestOptions]
@@ -180,13 +240,14 @@ class VoicesClient:
         from speechify import Speechify
 
         client = Speechify(
-            api_key="YOUR_API_KEY",
+            "2026-06-28",
+            token="YOUR_TOKEN",
         )
         client.voices.download_sample(
-            id="id",
+            voice_id="voice_id",
         )
         """
-        with self._raw_client.download_sample(id, request_options=request_options) as r:
+        with self._raw_client.download_sample(voice_id, request_options=request_options) as r:
             yield from r.data
 
 
@@ -205,19 +266,36 @@ class AsyncVoicesClient:
         """
         return self._raw_client
 
-    async def list(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[GetVoice]:
+    async def list(
+        self,
+        *,
+        cursor: typing.Optional[str] = None,
+        limit: typing.Optional[int] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncPager[GetVoice, ListVoicesResponse]:
         """
-        Gets the list of voices available for the user
+        Lists the voices available to the caller - the shared voice
+        catalog plus the workspace's personal cloned voices. By default
+        the full catalogue is returned in one response. Pagination is
+        opt-in: pass `limit` (and then `cursor` from the previous
+        response) to page through the list while `has_more` is true. Max
+        page size is 200.
 
         Parameters
         ----------
+        cursor : typing.Optional[str]
+            Opaque pagination cursor from a previous response.
+
+        limit : typing.Optional[int]
+            Max items per page (default 50, max 200).
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        typing.List[GetVoice]
-            A list of voices
+        AsyncPager[GetVoice, ListVoicesResponse]
+            The voice catalogue (or a page of it when `limit` is set).
 
         Examples
         --------
@@ -226,18 +304,24 @@ class AsyncVoicesClient:
         from speechify import AsyncSpeechify
 
         client = AsyncSpeechify(
-            api_key="YOUR_API_KEY",
+            "2026-06-28",
+            token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.voices.list()
+            response = await client.voices.list()
+            async for item in response:
+                yield item
+
+            # alternatively, you can paginate page-by-page
+            async for page in response.iter_pages():
+                yield page
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list(request_options=request_options)
-        return _response.data
+        return await self._raw_client.list(cursor=cursor, limit=limit, request_options=request_options)
 
     async def create(
         self,
@@ -249,7 +333,7 @@ class AsyncVoicesClient:
         locale: typing.Optional[str] = OMIT,
         avatar: typing.Optional[core.File] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> CreatedVoice:
+    ) -> GetVoice:
         """
         Create a personal (cloned) voice for the user
 
@@ -262,7 +346,7 @@ class AsyncVoicesClient:
             Gender marker for the personal voice
             male GenderMale
             female GenderFemale
-            notSpecified GenderNotSpecified
+            not_specified GenderNotSpecified
 
         sample : core.File
             See core.File for more documentation
@@ -283,7 +367,7 @@ class AsyncVoicesClient:
 
         Returns
         -------
-        CreatedVoice
+        GetVoice
             A created voice
 
         Examples
@@ -293,7 +377,8 @@ class AsyncVoicesClient:
         from speechify import AsyncSpeechify
 
         client = AsyncSpeechify(
-            api_key="YOUR_API_KEY",
+            "2026-06-28",
+            token="YOUR_TOKEN",
         )
 
 
@@ -318,13 +403,56 @@ class AsyncVoicesClient:
         )
         return _response.data
 
-    async def delete(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
+    async def get(self, voice_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetVoice:
+        """
+        Fetch a single voice by id - a shared catalogue voice or one of
+        the caller's own personal (cloned) voices. A personal voice that
+        belongs to another workspace returns 404, identical to an
+        unknown id, so voice inventory is never enumerable across tenants.
+
+        Parameters
+        ----------
+        voice_id : str
+            The ID of the voice to fetch
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        GetVoice
+            The voice.
+
+        Examples
+        --------
+        import asyncio
+
+        from speechify import AsyncSpeechify
+
+        client = AsyncSpeechify(
+            "2026-06-28",
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.voices.get(
+                voice_id="voice_id",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.get(voice_id, request_options=request_options)
+        return _response.data
+
+    async def delete(self, voice_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Delete a personal (cloned) voice
 
         Parameters
         ----------
-        id : str
+        voice_id : str
             The ID of the voice to delete
 
         request_options : typing.Optional[RequestOptions]
@@ -341,30 +469,31 @@ class AsyncVoicesClient:
         from speechify import AsyncSpeechify
 
         client = AsyncSpeechify(
-            api_key="YOUR_API_KEY",
+            "2026-06-28",
+            token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.voices.delete(
-                id="id",
+                voice_id="voice_id",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.delete(id, request_options=request_options)
+        _response = await self._raw_client.delete(voice_id, request_options=request_options)
         return _response.data
 
     async def download_sample(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, voice_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> typing.AsyncIterator[bytes]:
         """
         Download a personal (cloned) voice sample
 
         Parameters
         ----------
-        id : str
+        voice_id : str
             The ID of the voice to download sample for
 
         request_options : typing.Optional[RequestOptions]
@@ -382,18 +511,19 @@ class AsyncVoicesClient:
         from speechify import AsyncSpeechify
 
         client = AsyncSpeechify(
-            api_key="YOUR_API_KEY",
+            "2026-06-28",
+            token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.voices.download_sample(
-                id="id",
+                voice_id="voice_id",
             )
 
 
         asyncio.run(main())
         """
-        async with self._raw_client.download_sample(id, request_options=request_options) as r:
+        async with self._raw_client.download_sample(voice_id, request_options=request_options) as r:
             async for _chunk in r.data:
                 yield _chunk

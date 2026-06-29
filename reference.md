@@ -33,7 +33,7 @@ from speechify import Speechify
 from speechify.environment import SpeechifyEnvironment
 
 client = Speechify(
-    api_key="<token>",
+    token="<token>",
     environment=SpeechifyEnvironment.DEFAULT,
 )
 
@@ -160,7 +160,7 @@ from speechify import Speechify
 from speechify.environment import SpeechifyEnvironment
 
 client = Speechify(
-    api_key="<token>",
+    token="<token>",
     environment=SpeechifyEnvironment.DEFAULT,
 )
 
@@ -257,7 +257,7 @@ Please refer to the list of the supported languages and recommendations regardin
 </details>
 
 ## voices
-<details><summary><code>client.voices.<a href="src/speechify/voices/client.py">list</a>() -> typing.List[GetVoice]</code></summary>
+<details><summary><code>client.voices.<a href="src/speechify/voices/client.py">list</a>(...) -> ListVoicesResponse</code></summary>
 <dl>
 <dd>
 
@@ -269,7 +269,12 @@ Please refer to the list of the supported languages and recommendations regardin
 <dl>
 <dd>
 
-Gets the list of voices available for the user
+Lists the voices available to the caller - the shared voice
+catalog plus the workspace's personal cloned voices. By default
+the full catalogue is returned in one response. Pagination is
+opt-in: pass `limit` (and then `cursor` from the previous
+response) to page through the list while `has_more` is true. Max
+page size is 200.
 </dd>
 </dl>
 </dd>
@@ -288,7 +293,7 @@ from speechify import Speechify
 from speechify.environment import SpeechifyEnvironment
 
 client = Speechify(
-    api_key="<token>",
+    token="<token>",
     environment=SpeechifyEnvironment.DEFAULT,
 )
 
@@ -308,6 +313,22 @@ client.voices.list()
 <dl>
 <dd>
 
+**cursor:** `typing.Optional[str]` — Opaque pagination cursor from a previous response.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — Max items per page (default 50, max 200).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
     
 </dd>
@@ -320,7 +341,7 @@ client.voices.list()
 </dl>
 </details>
 
-<details><summary><code>client.voices.<a href="src/speechify/voices/client.py">create</a>(...) -> CreatedVoice</code></summary>
+<details><summary><code>client.voices.<a href="src/speechify/voices/client.py">create</a>(...) -> GetVoice</code></summary>
 <dl>
 <dd>
 
@@ -351,7 +372,7 @@ from speechify import Speechify
 from speechify.environment import SpeechifyEnvironment
 
 client = Speechify(
-    api_key="<token>",
+    token="<token>",
     environment=SpeechifyEnvironment.DEFAULT,
 )
 
@@ -390,7 +411,7 @@ client.voices.create(
 Gender marker for the personal voice
 male GenderMale
 female GenderFemale
-notSpecified GenderNotSpecified
+not_specified GenderNotSpecified
     
 </dd>
 </dl>
@@ -446,6 +467,82 @@ For example, `{"fullName": "John Doe", "email": "john@example.com"}`
 </dl>
 </details>
 
+<details><summary><code>client.voices.<a href="src/speechify/voices/client.py">get</a>(...) -> GetVoice</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Fetch a single voice by id - a shared catalogue voice or one of
+the caller's own personal (cloned) voices. A personal voice that
+belongs to another workspace returns 404, identical to an
+unknown id, so voice inventory is never enumerable across tenants.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from speechify import Speechify
+from speechify.environment import SpeechifyEnvironment
+
+client = Speechify(
+    token="<token>",
+    environment=SpeechifyEnvironment.DEFAULT,
+)
+
+client.voices.get(
+    voice_id="voice_id",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**voice_id:** `str` — The ID of the voice to fetch
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 <details><summary><code>client.voices.<a href="src/speechify/voices/client.py">delete</a>(...)</code></summary>
 <dl>
 <dd>
@@ -477,12 +574,12 @@ from speechify import Speechify
 from speechify.environment import SpeechifyEnvironment
 
 client = Speechify(
-    api_key="<token>",
+    token="<token>",
     environment=SpeechifyEnvironment.DEFAULT,
 )
 
 client.voices.delete(
-    id="id",
+    voice_id="voice_id",
 )
 
 ```
@@ -499,7 +596,7 @@ client.voices.delete(
 <dl>
 <dd>
 
-**id:** `str` — The ID of the voice to delete
+**voice_id:** `str` — The ID of the voice to delete
     
 </dd>
 </dl>
@@ -550,12 +647,12 @@ from speechify import Speechify
 from speechify.environment import SpeechifyEnvironment
 
 client = Speechify(
-    api_key="<token>",
+    token="<token>",
     environment=SpeechifyEnvironment.DEFAULT,
 )
 
 client.voices.download_sample(
-    id="id",
+    voice_id="voice_id",
 )
 
 ```
@@ -572,7 +669,7 @@ client.voices.download_sample(
 <dl>
 <dd>
 
-**id:** `str` — The ID of the voice to download sample for
+**voice_id:** `str` — The ID of the voice to download sample for
     
 </dd>
 </dl>

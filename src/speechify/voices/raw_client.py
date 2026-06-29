@@ -9,6 +9,7 @@ from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
 from ..core.jsonable_encoder import encode_path_param
+from ..core.pagination import AsyncPager, SyncPager
 from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
@@ -22,9 +23,9 @@ from ..errors.service_unavailable_error import ServiceUnavailableError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
 from ..errors.unprocessable_entity_error import UnprocessableEntityError
-from ..types.created_voice import CreatedVoice
 from ..types.error import Error
 from ..types.get_voice import GetVoice
+from ..types.list_voices_response import ListVoicesResponse
 from .types.create_voices_request_gender import CreateVoicesRequestGender
 from pydantic import ValidationError
 
@@ -36,35 +37,75 @@ class RawVoicesClient:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    def list(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[typing.List[GetVoice]]:
+    def list(
+        self,
+        *,
+        cursor: typing.Optional[str] = None,
+        limit: typing.Optional[int] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> SyncPager[GetVoice, ListVoicesResponse]:
         """
-        Gets the list of voices available for the user
+        Lists the voices available to the caller - the shared voice
+        catalog plus the workspace's personal cloned voices. By default
+        the full catalogue is returned in one response. Pagination is
+        opt-in: pass `limit` (and then `cursor` from the previous
+        response) to page through the list while `has_more` is true. Max
+        page size is 200.
 
         Parameters
         ----------
+        cursor : typing.Optional[str]
+            Opaque pagination cursor from a previous response.
+
+        limit : typing.Optional[int]
+            Max items per page (default 50, max 200).
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        HttpResponse[typing.List[GetVoice]]
-            A list of voices
+        SyncPager[GetVoice, ListVoicesResponse]
+            The voice catalogue (or a page of it when `limit` is set).
         """
         _response = self._client_wrapper.httpx_client.request(
             "v1/voices",
             method="GET",
+            params={
+                "cursor": cursor,
+                "limit": limit,
+            },
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
-                    typing.List[GetVoice],
+                _parsed_response = typing.cast(
+                    ListVoicesResponse,
                     parse_obj_as(
-                        type_=typing.List[GetVoice],  # type: ignore
+                        type_=ListVoicesResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
-                return HttpResponse(response=_response, data=_data)
+                _items = _parsed_response.voices
+                _parsed_next = _parsed_response.next_cursor
+                _has_next = _parsed_next is not None and _parsed_next != ""
+                _get_next = lambda: self.list(
+                    cursor=_parsed_next,
+                    limit=limit,
+                    request_options=request_options,
+                )
+                return SyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -128,7 +169,7 @@ class RawVoicesClient:
         locale: typing.Optional[str] = OMIT,
         avatar: typing.Optional[core.File] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[CreatedVoice]:
+    ) -> HttpResponse[GetVoice]:
         """
         Create a personal (cloned) voice for the user
 
@@ -141,7 +182,7 @@ class RawVoicesClient:
             Gender marker for the personal voice
             male GenderMale
             female GenderFemale
-            notSpecified GenderNotSpecified
+            not_specified GenderNotSpecified
 
         sample : core.File
             See core.File for more documentation
@@ -162,7 +203,7 @@ class RawVoicesClient:
 
         Returns
         -------
-        HttpResponse[CreatedVoice]
+        HttpResponse[GetVoice]
             A created voice
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -185,9 +226,9 @@ class RawVoicesClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CreatedVoice,
+                    GetVoice,
                     parse_obj_as(
-                        type_=CreatedVoice,  # type: ignore
+                        type_=GetVoice,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -300,13 +341,134 @@ class RawVoicesClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def delete(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
+    def get(self, voice_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[GetVoice]:
+        """
+        Fetch a single voice by id - a shared catalogue voice or one of
+        the caller's own personal (cloned) voices. A personal voice that
+        belongs to another workspace returns 404, identical to an
+        unknown id, so voice inventory is never enumerable across tenants.
+
+        Parameters
+        ----------
+        voice_id : str
+            The ID of the voice to fetch
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[GetVoice]
+            The voice.
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"v1/voices/{encode_path_param(voice_id)}",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    GetVoice,
+                    parse_obj_as(
+                        type_=GetVoice,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 500:
+                raise InternalServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 502:
+                raise BadGatewayError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 503:
+                raise ServiceUnavailableError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def delete(self, voice_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
         """
         Delete a personal (cloned) voice
 
         Parameters
         ----------
-        id : str
+        voice_id : str
             The ID of the voice to delete
 
         request_options : typing.Optional[RequestOptions]
@@ -317,7 +479,7 @@ class RawVoicesClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v1/voices/{encode_path_param(id)}",
+            f"v1/voices/{encode_path_param(voice_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -423,14 +585,14 @@ class RawVoicesClient:
 
     @contextlib.contextmanager
     def download_sample(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, voice_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> typing.Iterator[HttpResponse[typing.Iterator[bytes]]]:
         """
         Download a personal (cloned) voice sample
 
         Parameters
         ----------
-        id : str
+        voice_id : str
             The ID of the voice to download sample for
 
         request_options : typing.Optional[RequestOptions]
@@ -442,7 +604,7 @@ class RawVoicesClient:
             Voice sample audio file
         """
         with self._client_wrapper.httpx_client.stream(
-            f"v1/voices/{encode_path_param(id)}/sample",
+            f"v1/voices/{encode_path_param(voice_id)}/sample",
             method="GET",
             request_options=request_options,
         ) as _response:
@@ -565,36 +727,77 @@ class AsyncRawVoicesClient:
         self._client_wrapper = client_wrapper
 
     async def list(
-        self, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[typing.List[GetVoice]]:
+        self,
+        *,
+        cursor: typing.Optional[str] = None,
+        limit: typing.Optional[int] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncPager[GetVoice, ListVoicesResponse]:
         """
-        Gets the list of voices available for the user
+        Lists the voices available to the caller - the shared voice
+        catalog plus the workspace's personal cloned voices. By default
+        the full catalogue is returned in one response. Pagination is
+        opt-in: pass `limit` (and then `cursor` from the previous
+        response) to page through the list while `has_more` is true. Max
+        page size is 200.
 
         Parameters
         ----------
+        cursor : typing.Optional[str]
+            Opaque pagination cursor from a previous response.
+
+        limit : typing.Optional[int]
+            Max items per page (default 50, max 200).
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        AsyncHttpResponse[typing.List[GetVoice]]
-            A list of voices
+        AsyncPager[GetVoice, ListVoicesResponse]
+            The voice catalogue (or a page of it when `limit` is set).
         """
         _response = await self._client_wrapper.httpx_client.request(
             "v1/voices",
             method="GET",
+            params={
+                "cursor": cursor,
+                "limit": limit,
+            },
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
-                    typing.List[GetVoice],
+                _parsed_response = typing.cast(
+                    ListVoicesResponse,
                     parse_obj_as(
-                        type_=typing.List[GetVoice],  # type: ignore
+                        type_=ListVoicesResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
-                return AsyncHttpResponse(response=_response, data=_data)
+                _items = _parsed_response.voices
+                _parsed_next = _parsed_response.next_cursor
+                _has_next = _parsed_next is not None and _parsed_next != ""
+
+                async def _get_next():
+                    return await self.list(
+                        cursor=_parsed_next,
+                        limit=limit,
+                        request_options=request_options,
+                    )
+
+                return AsyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -658,7 +861,7 @@ class AsyncRawVoicesClient:
         locale: typing.Optional[str] = OMIT,
         avatar: typing.Optional[core.File] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[CreatedVoice]:
+    ) -> AsyncHttpResponse[GetVoice]:
         """
         Create a personal (cloned) voice for the user
 
@@ -671,7 +874,7 @@ class AsyncRawVoicesClient:
             Gender marker for the personal voice
             male GenderMale
             female GenderFemale
-            notSpecified GenderNotSpecified
+            not_specified GenderNotSpecified
 
         sample : core.File
             See core.File for more documentation
@@ -692,7 +895,7 @@ class AsyncRawVoicesClient:
 
         Returns
         -------
-        AsyncHttpResponse[CreatedVoice]
+        AsyncHttpResponse[GetVoice]
             A created voice
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -715,9 +918,9 @@ class AsyncRawVoicesClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CreatedVoice,
+                    GetVoice,
                     parse_obj_as(
-                        type_=CreatedVoice,  # type: ignore
+                        type_=GetVoice,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -830,15 +1033,138 @@ class AsyncRawVoicesClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
+    async def get(
+        self, voice_id: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> AsyncHttpResponse[GetVoice]:
+        """
+        Fetch a single voice by id - a shared catalogue voice or one of
+        the caller's own personal (cloned) voices. A personal voice that
+        belongs to another workspace returns 404, identical to an
+        unknown id, so voice inventory is never enumerable across tenants.
+
+        Parameters
+        ----------
+        voice_id : str
+            The ID of the voice to fetch
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[GetVoice]
+            The voice.
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"v1/voices/{encode_path_param(voice_id)}",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    GetVoice,
+                    parse_obj_as(
+                        type_=GetVoice,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 500:
+                raise InternalServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 502:
+                raise BadGatewayError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 503:
+                raise ServiceUnavailableError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
     async def delete(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, voice_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[None]:
         """
         Delete a personal (cloned) voice
 
         Parameters
         ----------
-        id : str
+        voice_id : str
             The ID of the voice to delete
 
         request_options : typing.Optional[RequestOptions]
@@ -849,7 +1175,7 @@ class AsyncRawVoicesClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v1/voices/{encode_path_param(id)}",
+            f"v1/voices/{encode_path_param(voice_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -955,14 +1281,14 @@ class AsyncRawVoicesClient:
 
     @contextlib.asynccontextmanager
     async def download_sample(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, voice_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> typing.AsyncIterator[AsyncHttpResponse[typing.AsyncIterator[bytes]]]:
         """
         Download a personal (cloned) voice sample
 
         Parameters
         ----------
-        id : str
+        voice_id : str
             The ID of the voice to download sample for
 
         request_options : typing.Optional[RequestOptions]
@@ -974,7 +1300,7 @@ class AsyncRawVoicesClient:
             Voice sample audio file
         """
         async with self._client_wrapper.httpx_client.stream(
-            f"v1/voices/{encode_path_param(id)}/sample",
+            f"v1/voices/{encode_path_param(voice_id)}/sample",
             method="GET",
             request_options=request_options,
         ) as _response:

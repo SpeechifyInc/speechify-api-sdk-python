@@ -271,7 +271,9 @@ class RawAudioClient:
         Returns
         -------
         typing.Iterator[HttpResponse[typing.Iterator[bytes]]]
-            Chunked audio stream for the requested input.
+            Streamed audio. The Content-Type matches the Accept header except
+            for `audio/pcm`, which returns `audio/L16` with rate and channels
+            parameters (see the Accept header description).
         """
         with self._client_wrapper.httpx_client.stream(
             "v1/audio/stream",
@@ -654,7 +656,9 @@ class AsyncRawAudioClient:
         Returns
         -------
         typing.AsyncIterator[AsyncHttpResponse[typing.AsyncIterator[bytes]]]
-            Chunked audio stream for the requested input.
+            Streamed audio. The Content-Type matches the Accept header except
+            for `audio/pcm`, which returns `audio/L16` with rate and channels
+            parameters (see the Accept header description).
         """
         async with self._client_wrapper.httpx_client.stream(
             "v1/audio/stream",
