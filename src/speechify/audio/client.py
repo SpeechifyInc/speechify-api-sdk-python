@@ -4,6 +4,8 @@ import typing
 
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
+from ..types.audio_output_format import AudioOutputFormat
+from ..types.audio_stream_output_format import AudioStreamOutputFormat
 from ..types.get_speech_options_request import GetSpeechOptionsRequest
 from ..types.get_speech_response import GetSpeechResponse
 from ..types.get_stream_options_request import GetStreamOptionsRequest
@@ -41,12 +43,15 @@ class AudioClient:
         language: typing.Optional[str] = OMIT,
         model: typing.Optional[GetSpeechRequestModel] = OMIT,
         options: typing.Optional[GetSpeechOptionsRequest] = OMIT,
+        output_format: typing.Optional[AudioOutputFormat] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> GetSpeechResponse:
         """
         Synthesize speech audio from text or SSML. Returns the complete audio
         file plus billing and speech-mark metadata in a single JSON response.
         For low-latency playback or long-form text, use POST /v1/audio/stream.
+        Set `output_format` for explicit sample-rate/bitrate control (e.g.
+        `pcm_16000` or `ulaw_8000` for telephony).
 
         Parameters
         ----------
@@ -66,9 +71,12 @@ class AudioClient:
             Please refer to the list of the supported languages and recommendations regarding this parameter: https://docs.speechify.ai/docs/language-support.
 
         model : typing.Optional[GetSpeechRequestModel]
-            Model used for audio synthesis. `simba-english` is optimized for English, `simba-multilingual` for non-English or mixed input. `simba-3.0` is the streaming-native model with lower TTFB and richer expressivity. Currently English only; multilingual coming soon. Non-English voices return 400 until multilingual support ships.
+            Model used for audio synthesis. `simba-english` is optimized for English, `simba-multilingual` for non-English or mixed input. `simba-3.2` is the streaming-native model with lower TTFB and richer expressivity, and the recommended Simba 3 model. `simba-3.0` is the earlier Simba 3.0 model, still available. `simba-3.0` and `simba-3.2` are currently English only; multilingual coming soon, and non-English voices return 400 until it ships.
 
         options : typing.Optional[GetSpeechOptionsRequest]
+
+        output_format : typing.Optional[AudioOutputFormat]
+            The output audio format as a `codec_sampleRate_bitrate` string. Takes precedence over `audio_format` when set.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -83,7 +91,8 @@ class AudioClient:
         from speechify import Speechify
 
         client = Speechify(
-            api_key="YOUR_API_KEY",
+            "2026-07-07",
+            token="YOUR_TOKEN",
         )
         client.audio.speech(
             audio_format="mp3",
@@ -99,6 +108,7 @@ class AudioClient:
             language=language,
             model=model,
             options=options,
+            output_format=output_format,
             request_options=request_options,
         )
         return _response.data
@@ -106,29 +116,26 @@ class AudioClient:
     def stream(
         self,
         *,
-        accept: StreamAudioRequestAccept,
         input: str,
         voice_id: str,
+        accept: typing.Optional[StreamAudioRequestAccept] = None,
         language: typing.Optional[str] = OMIT,
         model: typing.Optional[GetStreamRequestModel] = OMIT,
         options: typing.Optional[GetStreamOptionsRequest] = OMIT,
+        output_format: typing.Optional[AudioStreamOutputFormat] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> typing.Iterator[bytes]:
         """
         Synthesize speech and stream the audio back as it is generated, for
-        low-latency playback. The Accept header selects the audio container;
-        the response is raw audio bytes (HTTP chunked). For Base64-encoded
-        audio with speech-mark metadata in a single JSON response, use
+        low-latency playback. Set `output_format` in the body for explicit
+        codec/sample-rate/bitrate control (e.g. `pcm_16000` or `ulaw_8000` for
+        telephony), or fall back to the Accept header for the container; the
+        response is raw audio bytes (HTTP chunked). For Base64-encoded audio
+        with speech-mark metadata in a single JSON response, use
         POST /v1/audio/speech.
 
         Parameters
         ----------
-        accept : StreamAudioRequestAccept
-            Selects the audio container/codec for the streamed response. The
-            response Content-Type echoes this value, except `audio/pcm` returns
-            `audio/L16` with rate and channels parameters (raw 16-bit linear
-            PCM, 24 kHz mono, little-endian).
-
         input : str
             Plain text or SSML to be synthesized to speech.
             Refer to https://docs.speechify.ai/docs/api-limits for the input size limits.
@@ -137,14 +144,26 @@ class AudioClient:
         voice_id : str
             Id of the voice to be used for synthesizing speech. Refer to /v1/voices endpoint for available voices
 
+        accept : typing.Optional[StreamAudioRequestAccept]
+            Selects the audio container/codec for the streamed response when
+            `output_format` is not set in the request body. The response
+            Content-Type echoes this value, except `audio/pcm` returns
+            `audio/L16` with rate and channels parameters (raw 16-bit linear
+            PCM, 24 kHz mono, little-endian). For explicit sample-rate/bitrate
+            control (e.g. `pcm_16000`, `ulaw_8000`), set `output_format` in the
+            body instead; it takes precedence over this header.
+
         language : typing.Optional[str]
             Language of the input. Follow the format of an ISO 639-1 language code and an ISO 3166-1 region code, separated by a hyphen, e.g. en-US.
             Please refer to the list of the supported languages and recommendations regarding this parameter: https://docs.speechify.ai/docs/language-support.
 
         model : typing.Optional[GetStreamRequestModel]
-            Model used for audio synthesis. `simba-english` is optimized for English, `simba-multilingual` for non-English or mixed input. `simba-3.0` is the streaming-native model with lower TTFB and richer expressivity. Currently English only; multilingual coming soon. Non-English voices return 400 until multilingual support ships.
+            Model used for audio synthesis. `simba-english` is optimized for English, `simba-multilingual` for non-English or mixed input. `simba-3.2` is the streaming-native model with lower TTFB and richer expressivity, and the recommended Simba 3 model. `simba-3.0` is the earlier Simba 3.0 model, still available. `simba-3.0` and `simba-3.2` are currently English only; multilingual coming soon, and non-English voices return 400 until it ships.
 
         options : typing.Optional[GetStreamOptionsRequest]
+
+        output_format : typing.Optional[AudioStreamOutputFormat]
+            The output audio format as a `codec_sampleRate_bitrate` string. Takes precedence over the `Accept` header when set, so you can request formats the `Accept` enum does not cover (e.g. `pcm_16000`, `ulaw_8000`). `wav_*` formats are not supported on streaming - use `POST /v1/audio/speech` for wav.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response.
@@ -152,28 +171,33 @@ class AudioClient:
         Returns
         -------
         typing.Iterator[bytes]
-            Chunked audio stream for the requested input.
+            Streamed audio. When `output_format` is set it selects the
+            codec/sample rate; otherwise the Accept header does. The
+            Content-Type reflects the selected format: it matches the Accept
+            header, except raw PCM returns `audio/L16` (with rate and channels
+            parameters) and u-law returns `audio/basic`.
 
         Examples
         --------
         from speechify import Speechify
 
         client = Speechify(
-            api_key="YOUR_API_KEY",
+            "2026-07-07",
+            token="YOUR_TOKEN",
         )
         client.audio.stream(
-            accept="audio/mpeg",
             input="input",
             voice_id="voice_id",
         )
         """
         with self._raw_client.stream(
-            accept=accept,
             input=input,
             voice_id=voice_id,
+            accept=accept,
             language=language,
             model=model,
             options=options,
+            output_format=output_format,
             request_options=request_options,
         ) as r:
             yield from r.data
@@ -203,12 +227,15 @@ class AsyncAudioClient:
         language: typing.Optional[str] = OMIT,
         model: typing.Optional[GetSpeechRequestModel] = OMIT,
         options: typing.Optional[GetSpeechOptionsRequest] = OMIT,
+        output_format: typing.Optional[AudioOutputFormat] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> GetSpeechResponse:
         """
         Synthesize speech audio from text or SSML. Returns the complete audio
         file plus billing and speech-mark metadata in a single JSON response.
         For low-latency playback or long-form text, use POST /v1/audio/stream.
+        Set `output_format` for explicit sample-rate/bitrate control (e.g.
+        `pcm_16000` or `ulaw_8000` for telephony).
 
         Parameters
         ----------
@@ -228,9 +255,12 @@ class AsyncAudioClient:
             Please refer to the list of the supported languages and recommendations regarding this parameter: https://docs.speechify.ai/docs/language-support.
 
         model : typing.Optional[GetSpeechRequestModel]
-            Model used for audio synthesis. `simba-english` is optimized for English, `simba-multilingual` for non-English or mixed input. `simba-3.0` is the streaming-native model with lower TTFB and richer expressivity. Currently English only; multilingual coming soon. Non-English voices return 400 until multilingual support ships.
+            Model used for audio synthesis. `simba-english` is optimized for English, `simba-multilingual` for non-English or mixed input. `simba-3.2` is the streaming-native model with lower TTFB and richer expressivity, and the recommended Simba 3 model. `simba-3.0` is the earlier Simba 3.0 model, still available. `simba-3.0` and `simba-3.2` are currently English only; multilingual coming soon, and non-English voices return 400 until it ships.
 
         options : typing.Optional[GetSpeechOptionsRequest]
+
+        output_format : typing.Optional[AudioOutputFormat]
+            The output audio format as a `codec_sampleRate_bitrate` string. Takes precedence over `audio_format` when set.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -247,7 +277,8 @@ class AsyncAudioClient:
         from speechify import AsyncSpeechify
 
         client = AsyncSpeechify(
-            api_key="YOUR_API_KEY",
+            "2026-07-07",
+            token="YOUR_TOKEN",
         )
 
 
@@ -269,6 +300,7 @@ class AsyncAudioClient:
             language=language,
             model=model,
             options=options,
+            output_format=output_format,
             request_options=request_options,
         )
         return _response.data
@@ -276,29 +308,26 @@ class AsyncAudioClient:
     async def stream(
         self,
         *,
-        accept: StreamAudioRequestAccept,
         input: str,
         voice_id: str,
+        accept: typing.Optional[StreamAudioRequestAccept] = None,
         language: typing.Optional[str] = OMIT,
         model: typing.Optional[GetStreamRequestModel] = OMIT,
         options: typing.Optional[GetStreamOptionsRequest] = OMIT,
+        output_format: typing.Optional[AudioStreamOutputFormat] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> typing.AsyncIterator[bytes]:
         """
         Synthesize speech and stream the audio back as it is generated, for
-        low-latency playback. The Accept header selects the audio container;
-        the response is raw audio bytes (HTTP chunked). For Base64-encoded
-        audio with speech-mark metadata in a single JSON response, use
+        low-latency playback. Set `output_format` in the body for explicit
+        codec/sample-rate/bitrate control (e.g. `pcm_16000` or `ulaw_8000` for
+        telephony), or fall back to the Accept header for the container; the
+        response is raw audio bytes (HTTP chunked). For Base64-encoded audio
+        with speech-mark metadata in a single JSON response, use
         POST /v1/audio/speech.
 
         Parameters
         ----------
-        accept : StreamAudioRequestAccept
-            Selects the audio container/codec for the streamed response. The
-            response Content-Type echoes this value, except `audio/pcm` returns
-            `audio/L16` with rate and channels parameters (raw 16-bit linear
-            PCM, 24 kHz mono, little-endian).
-
         input : str
             Plain text or SSML to be synthesized to speech.
             Refer to https://docs.speechify.ai/docs/api-limits for the input size limits.
@@ -307,14 +336,26 @@ class AsyncAudioClient:
         voice_id : str
             Id of the voice to be used for synthesizing speech. Refer to /v1/voices endpoint for available voices
 
+        accept : typing.Optional[StreamAudioRequestAccept]
+            Selects the audio container/codec for the streamed response when
+            `output_format` is not set in the request body. The response
+            Content-Type echoes this value, except `audio/pcm` returns
+            `audio/L16` with rate and channels parameters (raw 16-bit linear
+            PCM, 24 kHz mono, little-endian). For explicit sample-rate/bitrate
+            control (e.g. `pcm_16000`, `ulaw_8000`), set `output_format` in the
+            body instead; it takes precedence over this header.
+
         language : typing.Optional[str]
             Language of the input. Follow the format of an ISO 639-1 language code and an ISO 3166-1 region code, separated by a hyphen, e.g. en-US.
             Please refer to the list of the supported languages and recommendations regarding this parameter: https://docs.speechify.ai/docs/language-support.
 
         model : typing.Optional[GetStreamRequestModel]
-            Model used for audio synthesis. `simba-english` is optimized for English, `simba-multilingual` for non-English or mixed input. `simba-3.0` is the streaming-native model with lower TTFB and richer expressivity. Currently English only; multilingual coming soon. Non-English voices return 400 until multilingual support ships.
+            Model used for audio synthesis. `simba-english` is optimized for English, `simba-multilingual` for non-English or mixed input. `simba-3.2` is the streaming-native model with lower TTFB and richer expressivity, and the recommended Simba 3 model. `simba-3.0` is the earlier Simba 3.0 model, still available. `simba-3.0` and `simba-3.2` are currently English only; multilingual coming soon, and non-English voices return 400 until it ships.
 
         options : typing.Optional[GetStreamOptionsRequest]
+
+        output_format : typing.Optional[AudioStreamOutputFormat]
+            The output audio format as a `codec_sampleRate_bitrate` string. Takes precedence over the `Accept` header when set, so you can request formats the `Accept` enum does not cover (e.g. `pcm_16000`, `ulaw_8000`). `wav_*` formats are not supported on streaming - use `POST /v1/audio/speech` for wav.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response.
@@ -322,7 +363,11 @@ class AsyncAudioClient:
         Returns
         -------
         typing.AsyncIterator[bytes]
-            Chunked audio stream for the requested input.
+            Streamed audio. When `output_format` is set it selects the
+            codec/sample rate; otherwise the Accept header does. The
+            Content-Type reflects the selected format: it matches the Accept
+            header, except raw PCM returns `audio/L16` (with rate and channels
+            parameters) and u-law returns `audio/basic`.
 
         Examples
         --------
@@ -331,13 +376,13 @@ class AsyncAudioClient:
         from speechify import AsyncSpeechify
 
         client = AsyncSpeechify(
-            api_key="YOUR_API_KEY",
+            "2026-07-07",
+            token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.audio.stream(
-                accept="audio/mpeg",
                 input="input",
                 voice_id="voice_id",
             )
@@ -346,12 +391,13 @@ class AsyncAudioClient:
         asyncio.run(main())
         """
         async with self._raw_client.stream(
-            accept=accept,
             input=input,
             voice_id=voice_id,
+            accept=accept,
             language=language,
             model=model,
             options=options,
+            output_format=output_format,
             request_options=request_options,
         ) as r:
             async for _chunk in r.data:

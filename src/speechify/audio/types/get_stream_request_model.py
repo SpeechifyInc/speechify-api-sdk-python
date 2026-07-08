@@ -2,4 +2,6 @@
 
 import typing
 
-GetStreamRequestModel = typing.Union[typing.Literal["simba-english", "simba-multilingual", "simba-3.0"], typing.Any]
+GetStreamRequestModel = typing.Union[
+    typing.Literal["simba-english", "simba-multilingual", "simba-3.0", "simba-3.2"], typing.Any
+]
