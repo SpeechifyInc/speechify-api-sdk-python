@@ -1,10 +1,10 @@
 [project]
 name = "speechify-api"
-version = "3.0.0"
+version = "3.0.1"
 
 [tool.poetry]
 name = "speechify-api"
-version = "3.0.0"
+version = "3.0.1"
 description = "Official Speechify API SDK"
 readme = "README.md"
 authors = [
