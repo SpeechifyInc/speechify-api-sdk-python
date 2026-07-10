@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.0.1](https://github.com/SpeechifyInc/speechify-api-sdk-python/compare/3.0.0...3.0.1) (2026-07-10)
+
+
+### Bug Fixes
+
+* correct SDK version strings and release 3.0.1 ([#24](https://github.com/SpeechifyInc/speechify-api-sdk-python/issues/24)) ([cdb080e](https://github.com/SpeechifyInc/speechify-api-sdk-python/commit/cdb080e3253b1bedb07827b7cd8fe80904102d82))
+
+
+### Documentation
+
+* add AGENTS.md with release/publish safeguards ([#22](https://github.com/SpeechifyInc/speechify-api-sdk-python/issues/22)) ([c4e1ad3](https://github.com/SpeechifyInc/speechify-api-sdk-python/commit/c4e1ad3ffa096543efa2cdd9195764cb5e9d346f))
+
 ## [3.0.0](https://github.com/SpeechifyInc/speechify-api-sdk-python/compare/2.0.0...3.0.0) (2026-07-10)
 
 
