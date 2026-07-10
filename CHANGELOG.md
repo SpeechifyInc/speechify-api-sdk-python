@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.0.0](https://github.com/SpeechifyInc/speechify-api-sdk-python/compare/2.0.0...3.0.0) (2026-07-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* removed voice types `CreatedVoice`, `CreateVoiceModel`, `CreateVoiceLanguage`, `CreateVoiceModelName`, `CreatedVoiceGender`, `CreatedVoiceType`; `GetSpeechResponse.audio_format` redocumented as the audio codec. Additive: new `ErrorCode` values, `output_format` field, `PaginationMeta` / `ListVoicesResponse`, `ConflictError`.
+
+### Features
+
+* regenerate SDK on fern-python-sdk@5.14.20 (TTS surface) ([#18](https://github.com/SpeechifyInc/speechify-api-sdk-python/issues/18)) ([02b6449](https://github.com/SpeechifyInc/speechify-api-sdk-python/commit/02b6449520da46ebcfa05bc5a82d63e482fc12df))
+
 ## [2.0.0](https://github.com/SpeechifyInc/speechify-api-sdk-python/compare/1.2.3...2.0.0) (2026-06-22)
 
 
