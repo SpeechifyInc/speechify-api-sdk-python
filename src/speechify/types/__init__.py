@@ -6,12 +6,8 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .create_voice_language import CreateVoiceLanguage
-    from .create_voice_model import CreateVoiceModel
-    from .create_voice_model_name import CreateVoiceModelName
-    from .created_voice import CreatedVoice
-    from .created_voice_gender import CreatedVoiceGender
-    from .created_voice_type import CreatedVoiceType
+    from .audio_output_format import AudioOutputFormat
+    from .audio_stream_output_format import AudioStreamOutputFormat
     from .error import Error
     from .error_code import ErrorCode
     from .error_detail import ErrorDetail
@@ -25,15 +21,13 @@ if typing.TYPE_CHECKING:
     from .get_voice_type import GetVoiceType
     from .get_voices_model import GetVoicesModel
     from .get_voices_model_name import GetVoicesModelName
+    from .list_voices_response import ListVoicesResponse
     from .nested_chunk import NestedChunk
+    from .pagination_meta import PaginationMeta
     from .speech_marks import SpeechMarks
 _dynamic_imports: typing.Dict[str, str] = {
-    "CreateVoiceLanguage": ".create_voice_language",
-    "CreateVoiceModel": ".create_voice_model",
-    "CreateVoiceModelName": ".create_voice_model_name",
-    "CreatedVoice": ".created_voice",
-    "CreatedVoiceGender": ".created_voice_gender",
-    "CreatedVoiceType": ".created_voice_type",
+    "AudioOutputFormat": ".audio_output_format",
+    "AudioStreamOutputFormat": ".audio_stream_output_format",
     "Error": ".error",
     "ErrorCode": ".error_code",
     "ErrorDetail": ".error_detail",
@@ -47,7 +41,9 @@ _dynamic_imports: typing.Dict[str, str] = {
     "GetVoiceType": ".get_voice_type",
     "GetVoicesModel": ".get_voices_model",
     "GetVoicesModelName": ".get_voices_model_name",
+    "ListVoicesResponse": ".list_voices_response",
     "NestedChunk": ".nested_chunk",
+    "PaginationMeta": ".pagination_meta",
     "SpeechMarks": ".speech_marks",
 }
 
@@ -74,12 +70,8 @@ def __dir__():
 
 
 __all__ = [
-    "CreateVoiceLanguage",
-    "CreateVoiceModel",
-    "CreateVoiceModelName",
-    "CreatedVoice",
-    "CreatedVoiceGender",
-    "CreatedVoiceType",
+    "AudioOutputFormat",
+    "AudioStreamOutputFormat",
     "Error",
     "ErrorCode",
     "ErrorDetail",
@@ -93,6 +85,8 @@ __all__ = [
     "GetVoiceType",
     "GetVoicesModel",
     "GetVoicesModelName",
+    "ListVoicesResponse",
     "NestedChunk",
+    "PaginationMeta",
     "SpeechMarks",
 ]

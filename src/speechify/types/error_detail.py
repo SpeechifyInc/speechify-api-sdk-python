@@ -27,6 +27,16 @@ class ErrorDetail(UniversalBaseModel):
     offending form field.
     """
 
+    details: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
+    """
+    Structured, endpoint-specific context beyond the flat
+    `fields` map. Present only on the few errors that carry
+    it (e.g. the `used_by` referrer list on a credential
+    delete-conflict); its shape depends on the error `code`.
+    Clients that don't recognise a `details` shape can ignore
+    it - the `code` + `message` contract is unchanged.
+    """
+
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
     else:

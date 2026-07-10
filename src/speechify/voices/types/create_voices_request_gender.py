@@ -2,4 +2,4 @@
 
 import typing
 
-CreateVoicesRequestGender = typing.Union[typing.Literal["male", "female", "notSpecified"], typing.Any]
+CreateVoicesRequestGender = typing.Union[typing.Literal["male", "female", "not_specified"], typing.Any]

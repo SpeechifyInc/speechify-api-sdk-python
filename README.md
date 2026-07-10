@@ -1,9 +1,9 @@
-# Speechifyinc Python Library
+# Speechify Python Library
 
 [![fern shield](https://img.shields.io/badge/%F0%9F%8C%BF-Built%20with%20Fern-brightgreen)](https://buildwithfern.com?utm_source=github&utm_medium=github&utm_campaign=readme&utm_source=https%3A%2F%2Fgithub.com%2Fspeechifyinc%2Fspeechify-api-sdk-python)
 [![pypi](https://img.shields.io/pypi/v/speechify-api)](https://pypi.python.org/pypi/speechify-api)
 
-The Speechifyinc Python library provides convenient access to the Speechifyinc APIs from Python.
+The Speechify Python library provides convenient access to the Speechify APIs from Python.
 
 ## Table of Contents
 
@@ -14,6 +14,7 @@ The Speechifyinc Python library provides convenient access to the Speechifyinc A
 - [Environments](#environments)
 - [Async Client](#async-client)
 - [Exception Handling](#exception-handling)
+- [Pagination](#pagination)
 - [Advanced](#advanced)
   - [Access Raw Response Data](#access-raw-response-data)
   - [Retries](#retries)
@@ -43,7 +44,7 @@ Instantiate and use the client with the following:
 from speechify import Speechify
 
 client = Speechify(
-    api_key="<token>",
+    token="<token>",
 )
 
 client.audio.speech(
@@ -77,7 +78,7 @@ import asyncio
 from speechify import AsyncSpeechify
 
 client = AsyncSpeechify(
-    api_key="<token>",
+    token="<token>",
 )
 
 
@@ -106,6 +107,29 @@ try:
 except ApiError as e:
     print(e.status_code)
     print(e.body)
+```
+
+## Pagination
+
+Paginated requests will return a `SyncPager` or `AsyncPager`, which can be used as generators for the underlying object.
+
+```python
+from speechify import Speechify
+
+client = Speechify(
+    token="<token>",
+)
+
+client.voices.list()
+```
+
+```python
+# You can also iterate through pages and access the typed response per page
+pager = client.voices.list(...)
+for page in pager.iter_pages():
+    print(page.response)  # access the typed response for each page
+    for item in page:
+        print(item)
 ```
 
 ## Advanced

@@ -4,6 +4,7 @@ import typing
 
 import pydantic
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .audio_output_format import AudioOutputFormat
 from .get_speech_response_audio_format import GetSpeechResponseAudioFormat
 from .speech_marks import SpeechMarks
 
@@ -16,12 +17,17 @@ class GetSpeechResponse(UniversalBaseModel):
 
     audio_format: GetSpeechResponseAudioFormat = pydantic.Field()
     """
-    The format of the audio data
+    The codec of the audio data
     """
 
     billable_characters_count: int = pydantic.Field()
     """
     The number of billable characters processed in the request.
+    """
+
+    output_format: typing.Optional[AudioOutputFormat] = pydantic.Field(default=None)
+    """
+    The full `codec_sampleRate_bitrate` format, echoed back when the request set `output_format`.
     """
 
     speech_marks: SpeechMarks
